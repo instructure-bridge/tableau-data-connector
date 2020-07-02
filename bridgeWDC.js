@@ -5,7 +5,7 @@
         authorUser: {
             table: {
                 id: "authorUser",
-                alias: "All User Data",
+                alias: "All Users",
                 columns: [{
                     alias: "User ID",
                     id: "id",
@@ -163,14 +163,37 @@
     $(document).ready(function () {
         $("#submitButton").click(function () {
             tableau.log("button pressed");
+            var ul = document.getElementById("apiList");
+            var items = ul.getElementsByTagName("li");
+            var apiCalls = [];
+            for (item of items) {
+                apiCalls.push(item.getAttribute("data-api"));
+            }
             var data = {
                 url: $("#url").val(),
-                tables: ["authorUser", "authorPrograms", "authorCourseTemplates"]
+                tables: apiCalls
             }
             tableau.connectionData = JSON.stringify(data);
             tableau.password = $("#apiKey").val();
             tableau.connectionName = "Bridge API";
             tableau.submit();
+        });
+        $("#addButton").click(function () {
+            var li = document.createElement("li");
+            var api = document.getElementById("apiSelector").value;
+            li.setAttribute("data-api", api);
+            li.setAttribute("class", "list-group-item");
+            var t = document.createTextNode(api);
+            li.appendChild(t);
+            document.getElementById("apiList").appendChild(li);
+        });
+        $("#resetButton").click(function () {
+            document.getElementById("url-section").style.display = "block";
+            document.getElementById("api-section").style.display = "none";
+        });
+        $("#credentialsButton").click(function () {
+            document.getElementById("url-section").style.display = "none";
+            document.getElementById("api-section").style.display = "block";
         });
     });
 })();
