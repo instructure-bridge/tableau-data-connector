@@ -57,6 +57,48 @@
             path: "/api/author/course_templates",
             data: "course_templates"
         },
+        authorListEnrollments: {
+            table: {
+                id: "authorListEnrollments",
+                alias: "Course Enrollments",
+                columns: [{
+                    alias: "Enrollment ID",
+                    id: "id",
+                    dataType: tableau.dataTypeEnum.int
+                }, {
+                    alias: "Score",
+                    id: "score",
+                    dataType: tableau.dataTypeEnum.int
+                }, {
+                    alias: "Is Required",
+                    id: "required",
+                    dataType: tableau.dataTypeEnum.bool
+                },
+                {
+                    alias: "Name",
+                    id: "name",
+                    linkedSource: "learner",
+                    linkedId: "name",
+                    dataType: tableau.dataTypeEnum.bool
+                },
+                {
+                    alias: "User ID",
+                    id: "user_id",
+                    linkedSource: "learner",
+                    linkedId: "id",
+                    dataType: tableau.dataTypeEnum.int
+                }]
+            },
+            path: "/api/author/course_templates/*/enrollments",
+            data: "enrollments",
+            requiredParameter: {
+                title: "Course",
+                path: "/api/author/course_templates",
+                data: "course_templates",
+                nameCol: "title",
+                valCol: "id"
+            }
+        },
         authorPrograms: {
             table: {
                 id: "authorPrograms",
@@ -106,17 +148,21 @@
 
         // takes each custom table and grabs the corredponding template table data
         for (table of data.tables) {
-            tableau.log(table);
             var apiCall = table["apiCall"]
             var newTable = JSON.parse(JSON.stringify(tables[apiCall]));
             id = "table" + idCounter;
             newTable["table"]["alias"] = table["title"];
             newTable["table"]["id"] = id;
             idCounter = idCounter + 1;
+
+            if ("requiredParameter" in table) {
+                var oldApiCall = newTable["path"];
+                var newApiCall = oldApiCall.replace("*", table["requiredParameter"]);
+                newTable["path"] = newApiCall;
+            }
             myTables[id] = newTable;
             chosenTables.push(newTable.table);
         }
-        tableau.log(myTables);
         schemaCallback(chosenTables);
     };
 
@@ -139,8 +185,29 @@
                 for (var i = 0, len = data.length; i < len; i++) {
                     var row = {}
                     for (column of tableInfo.table.columns) {
-                        var id = column.id;
-                        row[id] = data[i][id];
+                        if ("linkedSource" in column) { //for data in linked sources
+                            var tableauId = column.id;
+                            
+                            var linkedSource = column.linkedSource;
+                            var linkedId = column.linkedId;
+                            var id = data[i]["links"][linkedSource]["id"];
+                            var linkedType = data[i]["links"][linkedSource]["type"];
+                            var typeTable = result["linked"][linkedType];
+                            var linkedData = typeTable.filter(function(data) {
+                                return data.id === id;
+                            });
+                            if (linkedData.length == 1)
+                            {
+                                row[tableauId] = linkedData[0][linkedId];
+                            }
+                            else {
+                                row[tableauId] = null;
+                            }
+                        }
+                        else {
+                            var id = column.id;
+                            row[id] = data[i][id];
+                        }
                     }
                     tableData.push(row);
                 }
@@ -169,9 +236,8 @@
     myConnector.getData = function (table, doneCallback) {
         tableau.log("getData");
         var data = JSON.parse(tableau.connectionData);
-        var tableid = table.tableInfo.id
-        tableau.log(tableid);
-        var path = myTables[tableid].path
+        var tableid = table.tableInfo.id;
+        var path = myTables[tableid].path;
         var apiCall = data.url + path;
         performApiCall(table, doneCallback, apiCall);
     };
@@ -180,44 +246,100 @@
 
     $(document).ready(function () {
 
+        addOption = function(name, value, selector) {
+            var option = document.createElement("option");
+            option.innerText = name;
+            option.setAttribute("value", value);
+            selector.appendChild(option);
+        }
+
+        addTableOptions = function(availableTables) {
+            var selector = document.getElementById("apiSelector");
+            for (var table in availableTables) {
+                if (availableTables.hasOwnProperty(table)) {
+                    var name = availableTables[table]["table"]["alias"];
+                    var value = availableTables[table]["table"]["id"];
+                    addOption(name, value, selector);
+                } 
+            }     
+        }
+
+        clearRequiredParameterOptions = function() {
+            document.getElementById("requiredParameterSelector").innerHTML = "";
+        }
+
+        showElement = function(id, isShow) {
+            if (isShow) {
+                document.getElementById(id).style.display = "";
+            }
+            else {
+                document.getElementById(id).style.display = "none";
+            }
+        }
+
+        addTableOptions(tables);
+
         switchPage = function(start, end) {
-            document.getElementById(start).style.display = "none";
-            document.getElementById(end).style.display = "block";
+            showElement(start, false);
+            showElement(end, true);
+        }
+
+        showLoading = function(isLoading) {
+            if (isLoading) {
+                document.getElementById("addButton").disabled = true;
+                document.getElementById("addButton").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="sr-only">Loading...</span>';
+            }
+            else {
+                document.getElementById("addButton").disabled = false;
+                document.getElementById("addButton").innerHTML = "Add";
+            }
         }
 
         editTable = function(id) {
-            console.log("edit " + id)
             document.getElementById("tableName").value = $('#' + id + ' .title').text();
             document.getElementById("edit-section").setAttribute("currentTable", id);
+            var api = document.getElementById(id).getAttribute("data-api");
 
-
-            // switch to edit section
-            switchPage("api-section", "edit-section");
+            if ("requiredParameter" in tables[api]) {
+                clearRequiredParameterOptions();
+                showElement("requiredParameter", true);
+                document.getElementById("requiredParameterTitle").innerText = tables[api]["requiredParameter"]["title"];
+                getRequiredParameterData($("#url").val() + tables[api]["requiredParameter"]["path"], api);
+            }
+            else {
+                showElement("requiredParameter", false);
+                // switch to edit section
+                switchPage("api-section", "edit-section");
+            }
         }
 
         deleteTable = function(id) {
-            console.log("delete " + id)
             var ulLength = $('#apiList li').length;
             $('#' + id).remove();
             for (oldId = parseInt(id) + 1; oldId < ulLength; oldId++) {
                 var newId = oldId - 1;
-                console.log(newId);
                 $('#' + oldId + ' .deleteButton').attr('onclick', 'deleteTable(' + newId + ')');
                 $('#' + oldId + ' .editButton').attr('onclick', 'editTable(' + newId + ')');
                 document.getElementById(oldId).setAttribute("id", newId);
+            }
+            if ( $('#apiList li').length <= 0 ) {
+                showElement("emptyApiListMessage", true);
             }
         }
 
         // button for when the user is done choosing tables
         $("#submitButton").click(function () {
-            tableau.log("button pressed");
             var ul = document.getElementById("apiList");
             var items = ul.getElementsByTagName("li");
             var apiCalls = [];
             for (item of items) {
+
                 var newTable = {
                     apiCall: item.getAttribute("data-api"),
                     title: item.getElementsByClassName("title")[0].innerText
+                }
+                if (item.hasAttribute("data-require")) {
+                    newTable["requiredParameter"] = item.getAttribute("data-require");
                 }
                 apiCalls.push(newTable);
             }
@@ -231,13 +353,62 @@
             tableau.submit();
         });
 
+        getRequiredParameterData = function(apiCall, tableId) {
+            $.ajax({
+                url: apiCall,
+                type: "GET",
+                headers: {
+                    "Authorization": $("#apiKey").val(),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                success: function (result) {
+                    var tableInfo = tables[tableId]
+                    var data = result[tableInfo["requiredParameter"]["data"]];
+                    var nameCol = tableInfo["requiredParameter"]["nameCol"];
+                    var valCol = tableInfo["requiredParameter"]["valCol"];
+                    var selector = document.getElementById("requiredParameterSelector");
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        addOption(data[i][nameCol], data[i][valCol], selector);
+                    }
+                    if (result.meta.hasOwnProperty("next")) {
+                        var connectionURL = $("#url").val()
+                        //temp solution for local proxy, else statement is all the normal web connector would need
+                        if (connectionURL.startsWith("http://localhost:")) {
+                            var next = result.meta.next.substring(8);
+                            next = next.substring(next.indexOf("/"));
+                            var newUrl = connectionURL + next;
+                            getRequiredParameterData(newUrl, tableId);
+                        }
+                        else {
+                            getRequiredParameterData(result.meta.next, tableId);
+                        }
+                    }
+                    else {
+                        switchPage("api-section", "edit-section");
+                        showLoading(false);
+                    }
+                }
+            });
+        }
+
         // button when starting to add a table
         $("#addButton").click(function () {
             var api = document.getElementById("apiSelector").value;
             document.getElementById("tableName").value = tables[api]["table"]["alias"];
             document.getElementById("edit-section").setAttribute("currentTable", $('#apiList li').length)
-            // switch to edit section
-            switchPage("api-section", "edit-section");
+            if ("requiredParameter" in tables[api]) {
+                showLoading(true);
+                clearRequiredParameterOptions();
+                showElement("requiredParameter", true);
+                document.getElementById("requiredParameterTitle").innerText = tables[api]["requiredParameter"]["title"];
+                getRequiredParameterData($("#url").val() + tables[api]["requiredParameter"]["path"], api);
+            }
+            else {
+                showElement("requiredParameter", false);
+                // switch to edit section
+                switchPage("api-section", "edit-section");
+            }
         });
 
         // button when done editing a table
@@ -248,14 +419,25 @@
             if (id < ulLength) {
                 //editing table
                 $('#' + id + ' .title').text(document.getElementById("tableName").value);
+                var api = document.getElementById("apiSelector").value;
+
+                if ("requiredParameter" in tables[api]) {
+                    var requiredParameter = document.getElementById("requiredParameterSelector").value;
+                    document.getElementById(id).setAttribute("data-require", requiredParameter);
+                }
             }
             else {
                 //adding table
                 if ( ulLength <= 0 ) {
-                    document.getElementById("emptyApiListMessage").style.display = "none";
+                    showElement("emptyApiListMessage", false);
                 }
                 var li = document.createElement("li");
                 var api = document.getElementById("apiSelector").value;
+
+                if ("requiredParameter" in tables[api]) {
+                    var requiredParameter = document.getElementById("requiredParameterSelector").value;
+                    li.setAttribute("data-require", requiredParameter);
+                }
                 li.setAttribute("data-api", api);
                 li.setAttribute("class", "list-group-item");
                 li.setAttribute("id", id);

@@ -15,7 +15,7 @@
         crossorigin="anonymous"></script>
     <script src="https://connectors.tableau.com/libs/tableauwdc-2.3.latest.js" type="text/javascript"></script>
     <script src="bridgeWDC.js" type="text/javascript"></script>
-    
+
 </head>
 
 <body>
@@ -35,16 +35,14 @@
                         <label for="apiKey">Key:</label>
                         <input class="form-control" type="text" id="apiKey">
                     </div>
-                    <button type="button" class="btn btn-primary" id="credentialsButton">Set Credentials and URL</button>
+                    <button type="button" class="btn btn-primary" id="credentialsButton">Set Credentials and
+                        URL</button>
                 </form>
             </div>
             <!-- table section -->
             <div class="col-sm" id="api-section" style="display: none;">
                 <div class="input-group my-3">
                     <select class="custom-select" id="apiSelector">
-                        <option value="authorUser">All Users</option>
-                        <option value="authorCourseTemplates">All Courses</option>
-                        <option value="authorPrograms">All Programs</option>
                     </select>
                     <div class="input-group-append">
                         <button class="btn btn-outline-secondary" type="button" id="addButton">Add</button>
@@ -65,9 +63,16 @@
                 <div>
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
-                          <span class="input-group-text" id="tableNameTitle">Table Name</span>
+                            <span class="input-group-text" id="tableNameTitle">Table Name</span>
                         </div>
                         <input type="text" class="form-control" id="tableName" aria-describedby="tableNameTitle">
+                    </div>
+                    <div class="input-group mb-3" id="requiredParameter" style="display: none;">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text" for="requiredParameterSelector" id="requiredParameterTitle">Title</label>
+                        </div>
+                        <select class="custom-select" id="requiredParameterSelector">
+                        </select>
                     </div>
                     <button type="button" class="btn btn-primary" id="addParameterButton">Add Parameter</button>
                     <ul class="list-group my-3" id="parameterList">
