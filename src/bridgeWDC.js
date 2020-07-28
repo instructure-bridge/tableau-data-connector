@@ -1,3 +1,5 @@
+require('./main.css');
+
 (function () {
     var myConnector = tableau.makeConnector();
 
@@ -187,7 +189,7 @@
                     for (column of tableInfo.table.columns) {
                         if ("linkedSource" in column) { //for data in linked sources
                             var tableauId = column.id;
-                            
+
                             var linkedSource = column.linkedSource;
                             var linkedId = column.linkedId;
                             var id = data[i]["links"][linkedSource]["id"];
@@ -260,8 +262,8 @@
                     var name = availableTables[table]["table"]["alias"];
                     var value = availableTables[table]["table"]["id"];
                     addOption(name, value, selector);
-                } 
-            }     
+                }
+            }
         }
 
         clearRequiredParameterOptions = function() {
@@ -444,7 +446,7 @@
                 var title = document.createElement("div");
                 title.setAttribute("class", "title");
                 title.innerText = document.getElementById("tableName").value;
-                
+
                 var editButton = document.createElement("button");
                 editButton.setAttribute("class", "btn btn-light mx-1 editButton");
                 editButton.setAttribute("type", "button");
@@ -500,7 +502,6 @@
 
         // button to add a parameter to a api call in the edit section
         $("#addParameterButton").click(function () {
-            
         });
     });
 })();
