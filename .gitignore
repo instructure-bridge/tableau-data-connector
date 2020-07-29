@@ -1,1 +1,8 @@
-# To ignore
+*.log
+.*cache
+.DS_Store
+dist/
+node_modules/
+tmp/
+.yarn/
+src/__tests__/test-dist/
