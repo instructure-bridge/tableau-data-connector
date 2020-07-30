@@ -171,14 +171,11 @@ require('./main.css');
     // does an api call for a chosen table and repeats if necessary
     // look into changing because of possible stack overflow issues
     performApiCall = function (table, doneCallback, apiCall) {
+        const urlObj = setUrl(apiCall)
         $.ajax({
-            url: apiCall,
+            url: urlObj.apiCall,
             type: "GET",
-            headers: {
-                "Authorization": tableau.password,
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
+            headers: urlObj.headers,
             success: function (result) {
                 var tableid = table.tableInfo.id
                 var tableInfo = myTables[tableid]
@@ -215,17 +212,7 @@ require('./main.css');
                 }
                 table.appendRows(tableData);
                 if (result.meta.hasOwnProperty("next")) {
-                    //temp solution for local proxy, else statement is all the normal web connector would need
-                    var connectionData = JSON.parse(tableau.connectionData);
-                    if (connectionData.url.startsWith("http://localhost:")) {
-                        var next = result.meta.next.substring(8);
-                        next = next.substring(next.indexOf("/"));
-                        var newUrl = connectionData.url + next;
-                        performApiCall(table, doneCallback, newUrl);
-                    }
-                    else {
-                        performApiCall(table, doneCallback, result.meta.next);
-                    }
+                  performApiCall(table, doneCallback, result.meta.next);
                 }
                 else {
                     doneCallback();
@@ -240,7 +227,7 @@ require('./main.css');
         var data = JSON.parse(tableau.connectionData);
         var tableid = table.tableInfo.id;
         var path = myTables[tableid].path;
-        var apiCall = data.url + path;
+        var apiCall = new URL(path, data.url);
         performApiCall(table, doneCallback, apiCall);
     };
 
@@ -306,7 +293,7 @@ require('./main.css');
                 clearRequiredParameterOptions();
                 showElement("requiredParameter", true);
                 document.getElementById("requiredParameterTitle").innerText = tables[api]["requiredParameter"]["title"];
-                getRequiredParameterData($("#url").val() + tables[api]["requiredParameter"]["path"], api);
+                getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api);
             }
             else {
                 showElement("requiredParameter", false);
@@ -355,15 +342,44 @@ require('./main.css');
             tableau.submit();
         });
 
+        // Make requests go through local proxy if environment is development
+        // This makes it work with the tableau simulator
+        setUrl = function(apiCall) {
+          const parsedUrl = new URL(apiCall)
+          const defaultHeaders = {
+            "Authorization": $("#apiKey").val() || tableau.password,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          }
+
+          var url
+          var devHeaders
+
+        if (process.env.NODE_ENV === "development") {
+            // Address of webpack-dev-server
+            url = new URL((parsedUrl.pathname + parsedUrl.search), 'http://localhost:8888')
+            devHeaders = {
+              "X-Forwarded-Proto": parsedUrl.protocol,
+              "X-Forwarded-Host": parsedUrl.hostname,
+              "X-Forwarded-Port": parsedUrl.port
+            }
+          } else {
+            url = parsedUrl
+            devHeaders = {}
+          }
+
+          return {
+            "apiCall": url,
+            "headers": {...defaultHeaders, ...devHeaders}
+          }
+        }
+
         getRequiredParameterData = function(apiCall, tableId) {
+            const urlObj = setUrl(apiCall)
             $.ajax({
-                url: apiCall,
+                url: urlObj.apiCall,
                 type: "GET",
-                headers: {
-                    "Authorization": $("#apiKey").val(),
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
+                headers: urlObj.headers,
                 success: function (result) {
                     var tableInfo = tables[tableId]
                     var data = result[tableInfo["requiredParameter"]["data"]];
@@ -374,17 +390,7 @@ require('./main.css');
                         addOption(data[i][nameCol], data[i][valCol], selector);
                     }
                     if (result.meta.hasOwnProperty("next")) {
-                        var connectionURL = $("#url").val()
-                        //temp solution for local proxy, else statement is all the normal web connector would need
-                        if (connectionURL.startsWith("http://localhost:")) {
-                            var next = result.meta.next.substring(8);
-                            next = next.substring(next.indexOf("/"));
-                            var newUrl = connectionURL + next;
-                            getRequiredParameterData(newUrl, tableId);
-                        }
-                        else {
-                            getRequiredParameterData(result.meta.next, tableId);
-                        }
+                       getRequiredParameterData(result.meta.next, tableId);
                     }
                     else {
                         switchPage("api-section", "edit-section");
@@ -404,7 +410,7 @@ require('./main.css');
                 clearRequiredParameterOptions();
                 showElement("requiredParameter", true);
                 document.getElementById("requiredParameterTitle").innerText = tables[api]["requiredParameter"]["title"];
-                getRequiredParameterData($("#url").val() + tables[api]["requiredParameter"]["path"], api);
+                getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api);
             }
             else {
                 showElement("requiredParameter", false);
