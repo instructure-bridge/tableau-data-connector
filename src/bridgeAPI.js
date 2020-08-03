@@ -1,4 +1,3 @@
-
 export function setUrl(apiCall, apiKey) {
     const parsedUrl = new URL(apiCall)
     const defaultHeaders = {
