@@ -1,248 +1,22 @@
 require('./main.css');
+import { tables } from './tables.js'
+import TableauHelper from './tableau.js'
+import { setUrl, performApiCall } from './bridgeApi.js'
 
 (function () {
-    var myConnector = tableau.makeConnector();
 
-    // json table data, can be moved to a file
-    var tables = {
-        authorUser: {
-            table: {
-                id: "authorUser",
-                alias: "All Users",
-                columns: [{
-                    alias: "User ID",
-                    id: "id",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "First Name",
-                    id: "first_name",
-                    dataType: tableau.dataTypeEnum.string
-                }, {
-                    alias: "Last Name",
-                    id: "last_name",
-                    dataType: tableau.dataTypeEnum.string
-                }, {
-                    alias: "Sortable Name",
-                    id: "sortable_name",
-                    dataType: tableau.dataTypeEnum.string
-                }, {
-                    alias: "Department",
-                    id: "department",
-                    dataType: tableau.dataTypeEnum.string
-                }, {
-                    alias: "Job Title",
-                    id: "job_title",
-                    dataType: tableau.dataTypeEnum.string
-                }]
-            },
-            path: "/api/author/users",
-            data: "users"
-        },
-        authorCourseTemplates: {
-            table: {
-                id: "authorCourseTemplates",
-                alias: "All Courses",
-                columns: [{
-                    alias: "Course ID",
-                    id: "id",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "Course Title",
-                    id: "title",
-                    dataType: tableau.dataTypeEnum.string
-                }, {
-                    alias: "Is Published",
-                    id: "is_published",
-                    dataType: tableau.dataTypeEnum.bool
-                }]
-            },
-            path: "/api/author/course_templates",
-            data: "course_templates"
-        },
-        authorListEnrollments: {
-            table: {
-                id: "authorListEnrollments",
-                alias: "Course Enrollments",
-                columns: [{
-                    alias: "Enrollment ID",
-                    id: "id",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "Score",
-                    id: "score",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "Is Required",
-                    id: "required",
-                    dataType: tableau.dataTypeEnum.bool
-                },
-                {
-                    alias: "Name",
-                    id: "name",
-                    linkedSource: "learner",
-                    linkedId: "name",
-                    dataType: tableau.dataTypeEnum.bool
-                },
-                {
-                    alias: "User ID",
-                    id: "user_id",
-                    linkedSource: "learner",
-                    linkedId: "id",
-                    dataType: tableau.dataTypeEnum.int
-                }]
-            },
-            path: "/api/author/course_templates/*/enrollments",
-            data: "enrollments",
-            requiredParameter: {
-                title: "Course",
-                path: "/api/author/course_templates",
-                data: "course_templates",
-                nameCol: "title",
-                valCol: "id"
-            }
-        },
-        authorPrograms: {
-            table: {
-                id: "authorPrograms",
-                alias: "All Programs",
-                columns: [{
-                    alias: "Program ID",
-                    id: "id",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "Program Title",
-                    id: "title",
-                    dataType: tableau.dataTypeEnum.string
-                }, {
-                    alias: "Course Count",
-                    id: "course_count",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "Unfinished Learners",
-                    id: "unfinished_learners_count",
-                    dataType: tableau.dataTypeEnum.int
-                }, {
-                    alias: "Is Published",
-                    id: "is_published",
-                    dataType: tableau.dataTypeEnum.bool
-                }]
-            },
-            path: "/api/author/programs",
-            data: "programs"
-        }
-    };
-
-    // used to store the tables the user makes
-    var myTables = {}
-
-    myConnector.init = function (initCallback) {
-        tableau.log("init");
-        tableau.authType = tableau.authTypeEnum.custom;
-        initCallback();
-    }
-
-    // takes each table the user chose and returns the table schema for each to tableau
-    myConnector.getSchema = function (schemaCallback) {
-        tableau.log("getSchema");
-        var data = JSON.parse(tableau.connectionData);
-        var chosenTables = []
-        var idCounter = 1;
-
-        // takes each custom table and grabs the corredponding template table data
-        for (table of data.tables) {
-            var apiCall = table["apiCall"]
-            var newTable = JSON.parse(JSON.stringify(tables[apiCall]));
-            id = "table" + idCounter;
-            newTable["table"]["alias"] = table["title"];
-            newTable["table"]["id"] = id;
-            idCounter = idCounter + 1;
-
-            if ("requiredParameter" in table) {
-                var oldApiCall = newTable["path"];
-                var newApiCall = oldApiCall.replace("*", table["requiredParameter"]);
-                newTable["path"] = newApiCall;
-            }
-            myTables[id] = newTable;
-            chosenTables.push(newTable.table);
-        }
-        schemaCallback(chosenTables);
-    };
-
-    // does an api call for a chosen table and repeats if necessary
-    // look into changing because of possible stack overflow issues
-    performApiCall = function (table, doneCallback, apiCall) {
-        const urlObj = setUrl(apiCall)
-        $.ajax({
-            url: urlObj.apiCall,
-            type: "GET",
-            headers: urlObj.headers,
-            success: function (result) {
-                var tableid = table.tableInfo.id
-                var tableInfo = myTables[tableid]
-                var data = result[tableInfo.data];
-                var tableData = [];
-                for (var i = 0, len = data.length; i < len; i++) {
-                    var row = {}
-                    for (column of tableInfo.table.columns) {
-                        if ("linkedSource" in column) { //for data in linked sources
-                            var tableauId = column.id;
-
-                            var linkedSource = column.linkedSource;
-                            var linkedId = column.linkedId;
-                            var id = data[i]["links"][linkedSource]["id"];
-                            var linkedType = data[i]["links"][linkedSource]["type"];
-                            var typeTable = result["linked"][linkedType];
-                            var linkedData = typeTable.filter(function(data) {
-                                return data.id === id;
-                            });
-                            if (linkedData.length == 1)
-                            {
-                                row[tableauId] = linkedData[0][linkedId];
-                            }
-                            else {
-                                row[tableauId] = null;
-                            }
-                        }
-                        else {
-                            var id = column.id;
-                            row[id] = data[i][id];
-                        }
-                    }
-                    tableData.push(row);
-                }
-                table.appendRows(tableData);
-                if (result.meta.hasOwnProperty("next")) {
-                  performApiCall(table, doneCallback, result.meta.next);
-                }
-                else {
-                    doneCallback();
-                }
-            }
-        });
-    }
-
-    // called for each table, basically calls the api and fills out the table
-    myConnector.getData = function (table, doneCallback) {
-        tableau.log("getData");
-        var data = JSON.parse(tableau.connectionData);
-        var tableid = table.tableInfo.id;
-        var path = myTables[tableid].path;
-        var apiCall = new URL(path, data.url);
-        performApiCall(table, doneCallback, apiCall);
-    };
-
-    tableau.registerConnector(myConnector);
-
+    var tableauHelper = new TableauHelper(performApiCall);
+    
     $(document).ready(function () {
 
-        addOption = function(name, value, selector) {
+        var addOption = function (name, value, selector) {
             var option = document.createElement("option");
             option.innerText = name;
             option.setAttribute("value", value);
             selector.appendChild(option);
         }
 
-        addTableOptions = function(availableTables) {
+        var addTableOptions = function (availableTables) {
             var selector = document.getElementById("apiSelector");
             for (var table in availableTables) {
                 if (availableTables.hasOwnProperty(table)) {
@@ -253,11 +27,11 @@ require('./main.css');
             }
         }
 
-        clearRequiredParameterOptions = function() {
+        var clearRequiredParameterOptions = function () {
             document.getElementById("requiredParameterSelector").innerHTML = "";
         }
 
-        showElement = function(id, isShow) {
+        var showElement = function (id, isShow) {
             if (isShow) {
                 document.getElementById(id).style.display = "";
             }
@@ -268,12 +42,12 @@ require('./main.css');
 
         addTableOptions(tables);
 
-        switchPage = function(start, end) {
+        var switchPage = function (start, end) {
             showElement(start, false);
             showElement(end, true);
         }
 
-        showLoading = function(isLoading) {
+        var showLoading = function (isLoading) {
             if (isLoading) {
                 document.getElementById("addButton").disabled = true;
                 document.getElementById("addButton").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="sr-only">Loading...</span>';
@@ -284,7 +58,7 @@ require('./main.css');
             }
         }
 
-        editTable = function(id) {
+        var editTable = function (id) {
             document.getElementById("tableName").value = $('#' + id + ' .title').text();
             document.getElementById("edit-section").setAttribute("currentTable", id);
             var api = document.getElementById(id).getAttribute("data-api");
@@ -302,16 +76,16 @@ require('./main.css');
             }
         }
 
-        deleteTable = function(id) {
+        var deleteTable = function (id) {
             var ulLength = $('#apiList li').length;
             $('#' + id).remove();
-            for (oldId = parseInt(id) + 1; oldId < ulLength; oldId++) {
+            for (var oldId = parseInt(id) + 1; oldId < ulLength; oldId++) {
                 var newId = oldId - 1;
                 $('#' + oldId + ' .deleteButton').attr('onclick', 'deleteTable(' + newId + ')');
                 $('#' + oldId + ' .editButton').attr('onclick', 'editTable(' + newId + ')');
                 document.getElementById(oldId).setAttribute("id", newId);
             }
-            if ( $('#apiList li').length <= 0 ) {
+            if ($('#apiList li').length <= 0) {
                 showElement("emptyApiListMessage", true);
             }
         }
@@ -321,7 +95,7 @@ require('./main.css');
             var ul = document.getElementById("apiList");
             var items = ul.getElementsByTagName("li");
             var apiCalls = [];
-            for (item of items) {
+            for (var item of items) {
 
                 var newTable = {
                     apiCall: item.getAttribute("data-api"),
@@ -336,46 +110,16 @@ require('./main.css');
                 url: $("#url").val(),
                 tables: apiCalls
             }
-            tableau.connectionData = JSON.stringify(data);
-            tableau.password = $("#apiKey").val();
-            tableau.connectionName = "Bridge API";
-            tableau.submit();
+            tableauHelper.setConnectionData(JSON.stringify(data));
+            tableauHelper.setApiKey($("#apiKey").val());
+            tableauHelper.setConnectionName("Bridge API");
+            tableauHelper.tableauSubmit();
         });
 
-        // Make requests go through local proxy if environment is development
-        // This makes it work with the tableau simulator
-        setUrl = function(apiCall) {
-          const parsedUrl = new URL(apiCall)
-          const defaultHeaders = {
-            "Authorization": $("#apiKey").val() || tableau.password,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          }
+        
 
-          var url
-          var devHeaders
-
-        if (process.env.NODE_ENV === "development") {
-            // Address of webpack-dev-server
-            url = new URL((parsedUrl.pathname + parsedUrl.search), 'http://localhost:8888')
-            devHeaders = {
-              "X-Forwarded-Proto": parsedUrl.protocol,
-              "X-Forwarded-Host": parsedUrl.hostname,
-              "X-Forwarded-Port": parsedUrl.port
-            }
-          } else {
-            url = parsedUrl
-            devHeaders = {}
-          }
-
-          return {
-            "apiCall": url,
-            "headers": {...defaultHeaders, ...devHeaders}
-          }
-        }
-
-        getRequiredParameterData = function(apiCall, tableId) {
-            const urlObj = setUrl(apiCall)
+        var getRequiredParameterData = function (apiCall, tableId) {
+            const urlObj = setUrl(apiCall, $("#apiKey").val())
             $.ajax({
                 url: urlObj.apiCall,
                 type: "GET",
@@ -390,7 +134,7 @@ require('./main.css');
                         addOption(data[i][nameCol], data[i][valCol], selector);
                     }
                     if (result.meta.hasOwnProperty("next")) {
-                       getRequiredParameterData(result.meta.next, tableId);
+                        getRequiredParameterData(result.meta.next, tableId);
                     }
                     else {
                         switchPage("api-section", "edit-section");
@@ -436,7 +180,7 @@ require('./main.css');
             }
             else {
                 //adding table
-                if ( ulLength <= 0 ) {
+                if (ulLength <= 0) {
                     showElement("emptyApiListMessage", false);
                 }
                 var li = document.createElement("li");
@@ -457,7 +201,7 @@ require('./main.css');
                 editButton.setAttribute("class", "btn btn-light mx-1 editButton");
                 editButton.setAttribute("type", "button");
                 editButton.innerText = "Edit";
-                editButton.onclick = function() {
+                editButton.onclick = function () {
                     editTable(id);
                 };
 
@@ -465,7 +209,7 @@ require('./main.css');
                 deleteButton.setAttribute("class", "btn btn-light mx-1 deleteButton");
                 deleteButton.setAttribute("type", "button");
                 deleteButton.innerText = "Delete";
-                deleteButton.onclick = function() {
+                deleteButton.onclick = function () {
                     deleteTable(id);
                 };
 
