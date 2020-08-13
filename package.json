@@ -15,6 +15,11 @@
     "lint": "yarn eslint --plugin prettier --rule prettier/prettier:error src/*"
   },
   "devDependencies": {
+    "@babel/core": "^7.11.1",
+    "@babel/preset-env": "^7.11.0",
+    "@testing-library/dom": "^7.22.0",
+    "@testing-library/jest-dom": "^5.11.2",
+    "babel-jest": "^26.2.2",
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^4.0.0",
     "eslint": "^7.5.0",
@@ -23,6 +28,7 @@
     "html-loader": "^1.1.0",
     "html-webpack-plugin": "^4.3.0",
     "jest": "^26.1.0",
+    "jquery": "^3.5.1",
     "mini-css-extract-plugin": "^0.9.0",
     "prettier": "^2.0.5",
     "webdataconnector": "tableau/webdataconnector",
@@ -30,5 +36,8 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^5.0.9"
+  },
+  "dependencies": {
+    "axios": "^0.19.2"
   }
 }

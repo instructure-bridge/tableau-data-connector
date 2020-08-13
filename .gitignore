@@ -6,3 +6,4 @@ node_modules/
 tmp/
 .yarn/
 src/__tests__/test-dist/
+.actrc

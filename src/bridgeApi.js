@@ -1,13 +1,16 @@
-export function setUrl(apiCall, apiKey) {
-    const parsedUrl = new URL(apiCall)
-    const defaultHeaders = {
-        "Authorization": apiKey,
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-    }
+import 'axios';
+import Axios from 'axios';
 
-    var url
-    var devHeaders
+export function setUrl(apiCall, apiKey) {
+    const parsedUrl = new URL(apiCall);
+    const defaultHeaders = {
+        'Authorization': apiKey,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
+
+    var url;
+    var devHeaders;
 
     if (process.env.NODE_ENV === "development") {
         // Address of webpack-dev-server
@@ -18,8 +21,8 @@ export function setUrl(apiCall, apiKey) {
             "X-Forwarded-Port": parsedUrl.port
         }
     } else {
-        url = parsedUrl
-        devHeaders = {}
+        url = parsedUrl;
+        devHeaders = {};
     }
 
     return {
@@ -28,52 +31,61 @@ export function setUrl(apiCall, apiKey) {
     }
 }
 
-export function performApiCall(table, doneCallback, apiCall, myTables, apiKey) {
-    const urlObj = setUrl(apiCall, apiKey)
-    $.ajax({
-        url: urlObj.apiCall,
-        type: "GET",
-        headers: urlObj.headers,
-        success: function (result) {
-            var tableid = table.tableInfo.id
-            var tableInfo = myTables[tableid]
-            var data = result[tableInfo.data];
-            var tableData = [];
-            for (var i = 0, len = data.length; i < len; i++) {
-                var row = {}
-                for (var column of tableInfo.table.columns) {
-                    if ("linkedSource" in column) { //for data in linked sources
-                        var tableauId = column.id;
+export function addRow(table, myTables, result) {
+    var tableid = table.tableInfo.id;
+    var tableInfo = myTables[tableid];
+    var data = result[tableInfo.data];
+    var tableData = [];
+    for (var i = 0, len = data.length; i < len; i++) {
+        var row = {}
+        for (var column of tableInfo.table.columns) {
+            if ("linkedSource" in column) { //for data in linked sources
+                var tableauId = column.id;
 
-                        var linkedSource = column.linkedSource;
-                        var linkedId = column.linkedId;
-                        var id = data[i]["links"][linkedSource]["id"];
-                        var linkedType = data[i]["links"][linkedSource]["type"];
-                        var typeTable = result["linked"][linkedType];
-                        var linkedData = typeTable.filter(function (data) {
-                            return data.id === id;
-                        });
-                        if (linkedData.length == 1) {
-                            row[tableauId] = linkedData[0][linkedId];
-                        }
-                        else {
-                            row[tableauId] = null;
-                        }
-                    }
-                    else {
-                        var id = column.id;
-                        row[id] = data[i][id];
-                    }
+                var linkedSource = column.linkedSource;
+                var linkedId = column.linkedId;
+                var id = data[i]["links"][linkedSource]["id"];
+                var linkedType = data[i]["links"][linkedSource]["type"];
+                var typeTable = result["linked"][linkedType];
+                var linkedData = typeTable.filter(function (data) {
+                    return data.id === id;
+                });
+                if (linkedData.length == 1) {
+                    row[tableauId] = linkedData[0][linkedId];
                 }
-                tableData.push(row);
-            }
-            table.appendRows(tableData);
-            if (result.meta.hasOwnProperty("next")) {
-                performApiCall(table, doneCallback, result.meta.next, myTables, apiKey);
+                else {
+                    row[tableauId] = null;
+                }
             }
             else {
-                doneCallback();
+                var id = column.id;
+                row[id] = data[i][id];
             }
         }
+        tableData.push(row);
+    }
+    table.appendRows(tableData);
+}
+
+export function performApiCall(table, doneCallback, apiCall, myTables, apiKey) {
+    const urlObj = setUrl(apiCall, apiKey);
+    
+    Axios({
+        method: 'get',
+        url: urlObj.apiCall,
+        headers: urlObj.headers    
+    })
+    .then(function (response) {
+        var result = response.data;
+        addRow(table, myTables, result);
+        if (result.meta.hasOwnProperty("next")) {
+            performApiCall(table, doneCallback, result.meta.next, myTables, apiKey);
+        }
+        else {
+            doneCallback();
+        }
+    })
+    .catch(function (error) {
+        console.log(error);
     });
 }

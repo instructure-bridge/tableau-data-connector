@@ -1,3 +1,5 @@
+//dataTypeEnum: { bool: "bool", date: "date", datetime: "datetime", float: "float", int: "int", string: "string", geometry: "geometry" }
+
 export var tables = {
     authorUser: {
         table: {
@@ -6,27 +8,27 @@ export var tables = {
             columns: [{
                 alias: "User ID",
                 id: "id",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "First Name",
                 id: "first_name",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }, {
                 alias: "Last Name",
                 id: "last_name",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }, {
                 alias: "Sortable Name",
                 id: "sortable_name",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }, {
                 alias: "Department",
                 id: "department",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }, {
                 alias: "Job Title",
                 id: "job_title",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }]
         },
         path: "/api/author/users",
@@ -39,15 +41,15 @@ export var tables = {
             columns: [{
                 alias: "Course ID",
                 id: "id",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "Course Title",
                 id: "title",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }, {
                 alias: "Is Published",
                 id: "is_published",
-                dataType: tableau.dataTypeEnum.bool
+                dataType: "bool"
             }]
         },
         path: "/api/author/course_templates",
@@ -60,29 +62,29 @@ export var tables = {
             columns: [{
                 alias: "Enrollment ID",
                 id: "id",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "Score",
                 id: "score",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "Is Required",
                 id: "required",
-                dataType: tableau.dataTypeEnum.bool
+                dataType: "bool"
             },
             {
                 alias: "Name",
                 id: "name",
                 linkedSource: "learner",
                 linkedId: "name",
-                dataType: tableau.dataTypeEnum.bool
+                dataType: "bool"
             },
             {
                 alias: "User ID",
                 id: "user_id",
                 linkedSource: "learner",
                 linkedId: "id",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }]
         },
         path: "/api/author/course_templates/*/enrollments",
@@ -102,23 +104,23 @@ export var tables = {
             columns: [{
                 alias: "Program ID",
                 id: "id",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "Program Title",
                 id: "title",
-                dataType: tableau.dataTypeEnum.string
+                dataType: "string"
             }, {
                 alias: "Course Count",
                 id: "course_count",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "Unfinished Learners",
                 id: "unfinished_learners_count",
-                dataType: tableau.dataTypeEnum.int
+                dataType: "int"
             }, {
                 alias: "Is Published",
                 id: "is_published",
-                dataType: tableau.dataTypeEnum.bool
+                dataType: "bool"
             }]
         },
         path: "/api/author/programs",
