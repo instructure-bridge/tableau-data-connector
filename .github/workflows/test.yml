@@ -9,12 +9,6 @@ on:
   workflow_dispatch:
     branches-ignore:
       - 'gh-pages'
-    inputs:
-      deploy:
-        description: 'Deploy: [true, false]'
-        required: true
-        default: 'false'
-
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
@@ -31,6 +25,8 @@ jobs:
     #- name: Run linters(ignore errors for now)
       #run: yarn lint || true
     - name: Run jest tests
-      env: 
+      env:
         API_KEY: ${{ secrets.TEST_API_KEY }}
       run: yarn test
+    - name: Run production build to ensure the build works
+      run: yarn build

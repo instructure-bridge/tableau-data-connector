@@ -1,0 +1,48 @@
+name: 'Deploy'
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy: [true, false]'
+        required: true
+        default: 'false'
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        persist-credentials: false # Needed for deployment to run correctly
+
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: '12'
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Build production package
+      run: yarn build
+
+    # Only use if GITHUB_TOKEN won't work
+    #- name: Install SSH Client
+      #uses: webfactory/ssh-agent
+      #with:
+        #ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
+
+    - name: Deploy pages
+      if: (github.event_name == 'push' || github.event.inputs.deploy == 'true')
+      uses: JamesIves/github-pages-deploy-action
+      with:
+        SSH: false
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: dist
+        CLEAN: false
+        CLEAN_EXCLUDE: '[".gitattributes", ".gitignore", "CNAME"]'
