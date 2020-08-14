@@ -14,19 +14,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-20.04]
     steps:
     - uses: actions/checkout@v2
+
     - uses: actions/setup-node@v2-beta
       with:
         node-version: '12'
+
     - name: Install dependencies
       run: yarn install
-    #- name: Run linters(ignore errors for now)
-      #run: yarn lint || true
+
     - name: Run jest tests
       env:
         API_KEY: ${{ secrets.TEST_API_KEY }}
       run: yarn test
+
     - name: Run production build to ensure the build works
       run: yarn build
