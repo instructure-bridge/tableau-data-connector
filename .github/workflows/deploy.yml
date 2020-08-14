@@ -44,5 +44,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: gh-pages
         FOLDER: dist
-        CLEAN: false
-        CLEAN_EXCLUDE: '[".gitattributes", ".gitignore", "CNAME"]'
+        CLEAN: true
+        CLEAN_EXCLUDE: '[".gitattributes", ".gitignore", "CNAME", "LICENSE"]'
