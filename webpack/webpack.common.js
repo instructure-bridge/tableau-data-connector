@@ -12,6 +12,14 @@ module.exports = function (configDirs) {
     module: {
       rules: [
         {
+          test: /\.svg$/i,
+          use: [
+            {
+              loader: 'file-loader',
+            },
+          ],
+        },
+        {
           test: /\.css$/,
           include: [configDirs.srcPath],
           use: [MiniCssExtractPlugin.loader, 'css-loader'],
@@ -23,6 +31,7 @@ module.exports = function (configDirs) {
         title: 'Bridge API',
         filename: configDirs.distPath + '/index.html',
         template: configDirs.srcPath + '/index.ejs',
+        favicon: configDirs.srcPath + '/favicon.ico',
         inject: 'head',
       }),
       new MiniCssExtractPlugin({ filename: 'styles.css' }),
