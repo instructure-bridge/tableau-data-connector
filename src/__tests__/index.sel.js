@@ -13,7 +13,7 @@ describe('selenium', function () {
 
     beforeEach(async function() {
         driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options().headless().windowSize(screen)).build();
-    });
+    }, 30000);
 
     it('test', async function() {
         await driver.get('http://localhost:8888');
@@ -72,5 +72,5 @@ describe('selenium', function () {
 
     afterEach(function() {
         driver.quit()
-    });
+    }, 10000);
 });
