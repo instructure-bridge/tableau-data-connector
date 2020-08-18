@@ -1,12 +1,18 @@
 import 'chromedriver'
+import chrome from 'selenium-webdriver/chrome'
 import {Builder, By} from 'selenium-webdriver';
+
+const screen = {
+    width: 640,
+    height: 480
+  };
 
 
 describe('selenium', function () {
     let driver;
 
     beforeEach(async function() {
-        driver = await new Builder().forBrowser('chrome').build();
+        driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options().headless().windowSize(screen)).build();
     });
 
     it('test', async function() {
