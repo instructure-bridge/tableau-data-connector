@@ -68,7 +68,7 @@ describe('selenium', function () {
         expect(editStyle).toEqual('display: none;');
 
         
-    });
+    }, 30000);
 
     afterEach(function() {
         driver.quit()
