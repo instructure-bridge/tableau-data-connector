@@ -3,7 +3,7 @@ module.exports = {
     verbose: true,
     clearMocks: true,
     coverageDirectory: 'coverage-jest',
-    testRegex: '((\\.|/)(test|spec))\\.[jt]sx?$',
+    testRegex: '((\\.|/)(sel))\\.[jt]sx?$',
     coveragePathIgnorePatterns: [
         '/node_modules/',
         '/vendor/',
