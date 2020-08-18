@@ -30,5 +30,8 @@ jobs:
         API_KEY: ${{ secrets.TEST_API_KEY }}
       run: yarn test
 
+    - name: Run integration tests
+      run: yarn integration
+
     - name: Run production build to ensure the build works
       run: yarn build

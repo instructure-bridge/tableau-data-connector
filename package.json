@@ -14,7 +14,7 @@
     "lint": "yarn eslint --plugin prettier --rule prettier/prettier:error src/*",
     "selenium": "yarn jest -c jest.config.selenium.js",
     "integration": "start-server-and-test 'yarn start' http://localhost:8888 'yarn selenium'",
-    "test": "yarn webpack:test && NODE_ENV=test yarn jest && yarn integration"
+    "test": "yarn webpack:test && NODE_ENV=test yarn jest"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",
