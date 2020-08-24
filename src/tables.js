@@ -1,3 +1,4 @@
+//enum string names, makes it much easier than using the tableau enum
 //dataTypeEnum: { bool: "bool", date: "date", datetime: "datetime", float: "float", int: "int", string: "string", geometry: "geometry" }
 
 export var tables = {
@@ -77,7 +78,7 @@ export var tables = {
                 id: "name",
                 linkedSource: "learner",
                 linkedId: "name",
-                dataType: "bool"
+                dataType: "string"
             },
             {
                 alias: "User ID",

@@ -2,16 +2,20 @@ import { tables } from './tables.js'
 
 export default class TableauHelper {
     constructor(apiMethod) {
+        //tableau create connector
         this.myConnector = tableau.makeConnector();
 
         this.myTables = {}
         var helper = this;
+
+        //tableau init
         this.myConnector.init = function (initCallback) {
             tableau.log("init");
             tableau.authType = tableau.authTypeEnum.custom;
             initCallback();
         }
 
+        //tableau get schema
         this.myConnector.getSchema = function (schemaCallback) {
             tableau.log("getSchema");
             var data = JSON.parse(tableau.connectionData);
@@ -38,6 +42,7 @@ export default class TableauHelper {
             schemaCallback(chosenTables);
         };
 
+        //tableau get data
         this.myConnector.getData = function (table, doneCallback) {
             tableau.log("getData");
             var data = JSON.parse(tableau.connectionData);
@@ -47,6 +52,7 @@ export default class TableauHelper {
             apiMethod(table, doneCallback, apiCall, helper.myTables, tableau.password);
         };
 
+        //tableau connector registration
         tableau.registerConnector(this.myConnector);
     }
 

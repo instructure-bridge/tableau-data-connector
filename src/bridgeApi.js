@@ -1,4 +1,3 @@
-import 'axios';
 import Axios from 'axios';
 
 export function setUrl(apiCall, apiKey) {
@@ -87,5 +86,7 @@ export function performApiCall(table, doneCallback, apiCall, myTables, apiKey) {
     })
     .catch(function (error) {
         console.log(error);
+        doneCallback();
+        //TODO: try to find some sort of way to report an error since the browser is already closed
     });
 }

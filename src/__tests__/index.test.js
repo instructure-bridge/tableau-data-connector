@@ -20,10 +20,6 @@ class FakeTable {
 }
 
 describe('bridgeAPI', function () {
-  let API_KEY;
-  beforeEach(() => {
-    API_KEY = process.env.API_KEY
-  });
   
   it('try row code', function() {
     let table = new FakeTable("table1");
