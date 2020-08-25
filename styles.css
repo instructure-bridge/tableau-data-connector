@@ -5,3 +5,7 @@
 .title {
     margin: auto 0;
 }
+
+.errorText {
+    color: red;
+}
