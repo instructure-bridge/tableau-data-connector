@@ -34,6 +34,7 @@ export function addRow(table, myTables, result) {
     var tableid = table.tableInfo.id;
     var tableInfo = myTables[tableid];
     var data = result[tableInfo.data];
+    console.log(data);
     var tableData = [];
     for (var i = 0, len = data.length; i < len; i++) {
         var row = {}
@@ -55,6 +56,12 @@ export function addRow(table, myTables, result) {
                 else {
                     row[tableauId] = null;
                 }
+            }
+            else if ("parent_id" in column) {
+                var id = column.id;
+                var parentId = column.parent_id;
+                var subId = column.sub_id;
+                row[id] = data[i][parentId][subId];
             }
             else {
                 var id = column.id;

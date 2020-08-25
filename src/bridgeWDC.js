@@ -63,6 +63,15 @@ $(document).ready(function () {
         }
     }
 
+    var showErrorMessage = function(text, timeout) {
+        document.getElementById("errorText").innerHTML = text;
+        showElement("errorCard", true);
+        setTimeout(function() {
+            showElement("errorCard", false);
+            document.getElementById("errorText").innerHTML = "";
+        }, (timeout * 1000));
+    }
+
     //function for edit button action
     var editTable = function (id) {
         document.getElementById("tableName").value = $('#' + id + ' .title').text();
@@ -88,10 +97,8 @@ $(document).ready(function () {
     var deleteTable = function (id) {
         var ulLength = $('#apiList li').length;
         $('#' + id).remove();
-        console.log(`deleted:${id}`);
         for (var oldId = parseInt(id) + 1; oldId < ulLength; oldId++) {
             var newId = oldId - 1;
-            console.log(`oldId:${oldId}; newId:${newId}`);
             // $('#' + oldId + ' .deleteButton').off('click');
             // $('#' + oldId + ' .deleteButton').click(function(){
             //     deleteTable(newId);
@@ -162,8 +169,7 @@ $(document).ready(function () {
         .catch(function (error) {
             console.log(error);
             showLoading(false);
-            //TODO: change cause tableau desktop doesn't support alerts
-            alert('Could not fetch course data, check that the url and api key are correct.');
+            showErrorMessage('Could not fetch course data, check that the url and api key are correct.', 5);
         });
     }
 

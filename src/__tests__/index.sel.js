@@ -81,7 +81,7 @@ describe('selenium', function () {
         await driver.findElement(By.id('editDoneButton')).click();
         let tableName1 = await driver.findElement(By.id('0')).findElement(By.className('title')).getAttribute("innerText");
         
-        expect(tableName1).toEqual('All Users');
+        expect(tableName1).toEqual('List Users');
 
         await driver.findElement(By.id('0')).findElement(By.className('editButton')).click();
         let nameInput = await driver.findElement(By.id('tableName'));
@@ -116,7 +116,7 @@ describe('selenium', function () {
 
         for (let id = 0; id < numTables; id++) {
             let tableName = await driver.findElement(By.id(id.toString())).findElement(By.className('title')).getAttribute("innerText");
-            expect(tableName).toEqual('All Users');
+            expect(tableName).toEqual('List Users');
         }
 
         for (let id = 0; id < numTables; id++) {
@@ -131,7 +131,6 @@ describe('selenium', function () {
             expect(tableName).toEqual('Table' + id);
         }
         for (let id = numTables - 1; id >= 0; id--) {
-            console.log(id);
             await driver.findElement(By.id('0')).findElement(By.className('deleteButton')).click();
             await expect(async() => { 
                 await driver.findElement(By.id(id.toString()));
