@@ -34,7 +34,6 @@ export function addRow(table, myTables, result) {
     var tableid = table.tableInfo.id;
     var tableInfo = myTables[tableid];
     var data = result[tableInfo.data];
-    console.log(data);
     var tableData = [];
     for (var i = 0, len = data.length; i < len; i++) {
         var row = {}
@@ -75,7 +74,7 @@ export function addRow(table, myTables, result) {
 
 export function performApiCall(table, doneCallback, apiCall, myTables, apiKey) {
     const urlObj = setUrl(apiCall, apiKey);
-    
+    console.log(apiCall);
     Axios({
         method: 'get',
         url: urlObj.apiCall,

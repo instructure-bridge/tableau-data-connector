@@ -36,6 +36,11 @@ export default class TableauHelper {
                     var newApiCall = oldApiCall.replace("*", table["requiredParameter"]);
                     newTable["path"] = newApiCall;
                 }
+                if ("optionalParameters" in table) {
+                    var oldApiCall = newTable["path"];
+                    var newApiCall = oldApiCall + '?' + table["optionalParameters"]
+                    newTable["path"] = newApiCall;
+                }
                 helper.myTables[id] = newTable;
                 chosenTables.push(newTable.table);
             }

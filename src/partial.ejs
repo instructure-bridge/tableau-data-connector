@@ -1,7 +1,9 @@
 <div class="container-fluid">
-  <div class="row"  style="display: inline;">
+  <div class="row" style="display: inline;">
     <a href="https://www.instructure.com/bridge/"><img src="Bridge_Logo_Horizontal.svg" height="100px" /></a>
-    <span class="align-middle"><h1 class="mx-auto">Web Data Connector for Tableau</h1></span>
+    <span class="align-middle">
+      <h1 class="mx-auto">Web Data Connector for Tableau</h1>
+    </span>
     <div class="card" id="errorCard" style="display: none;">
       <div class="card-body errorText" id="errorText"></div>
     </div>
@@ -57,10 +59,13 @@
           <select class="custom-select" id="requiredParameterSelector">
           </select>
         </div>
-        <button type="button" class="btn btn-primary" id="addParameterButton">Add Parameter</button>
-        <ul class="list-group my-3" id="parameterList">
-        </ul>
-        <button type="button" class="btn btn-primary" id="editDoneButton">Done</button>
+        <div id="optionalParameterSection">
+          <h3>Optional Parameters</h3>
+          <div id="optionalParameterList">
+
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary my-3" id="editDoneButton">Done</button>
       </div>
     </div>
   </div>

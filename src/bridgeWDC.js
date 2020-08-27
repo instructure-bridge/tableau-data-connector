@@ -20,7 +20,7 @@ $(document).ready(function () {
 
     //function to add table options to the api selector
     var addTableOptions = function (availableTables) {
-        var selector = document.getElementById("apiSelector");
+        var selector = $("#apiSelector")[0];
         for (var table in availableTables) {
             if (availableTables.hasOwnProperty(table)) {
                 var name = availableTables[table]["table"]["alias"];
@@ -32,16 +32,16 @@ $(document).ready(function () {
 
     //function for clearing the required parameter selector options
     var clearRequiredParameterOptions = function () {
-        document.getElementById("requiredParameterSelector").innerHTML = "";
+        $("#requiredParameterSelector").html("");
     }
 
     //function for showing and hiding elements
     var showElement = function (id, isShow) {
         if (isShow) {
-            document.getElementById(id).style.display = "";
+            $(`#${id}`).css('display', '');
         }
         else {
-            document.getElementById(id).style.display = "none";
+            $(`#${id}`).css('display', 'none');
         }
     }
 
@@ -54,35 +54,40 @@ $(document).ready(function () {
     //function for showing the loading icon for the required parameter fethcing
     var showLoading = function (isLoading) {
         if (isLoading) {
-            document.getElementById("addButton").disabled = true;
-            document.getElementById("addButton").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="sr-only">Loading...</span>';
+            $("#addButton").prop('disabled', true);
+            $("#addButton").html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="sr-only">Loading...</span>');
         }
         else {
-            document.getElementById("addButton").disabled = false;
-            document.getElementById("addButton").innerHTML = "Add";
+            $("#addButton").prop('disabled', false);
+            $("#addButton").html("Add");
         }
     }
 
     var showErrorMessage = function(text, timeout) {
-        document.getElementById("errorText").innerHTML = text;
+        $("#errorText").html(text);
         showElement("errorCard", true);
         setTimeout(function() {
             showElement("errorCard", false);
-            document.getElementById("errorText").innerHTML = "";
+            $("#errorText").html("");
         }, (timeout * 1000));
     }
 
     //function for edit button action
     var editTable = function (id) {
-        document.getElementById("tableName").value = $('#' + id + ' .title').text();
-        document.getElementById("edit-section").setAttribute("currentTable", id);
-        var api = document.getElementById(id).getAttribute("data-api");
+        $("#tableName").val($('#' + id + ' .title').text());
+        $("#edit-section").attr("currentTable", id);
+        var api = $(`#${id}`).attr("data-api");
+
+        if ("parameters" in tables[api]) { //if the api call has optional parameters
+            showElement("optionalParameterSection", true);
+            addOptionalParameters(api);
+        }
 
         if ("requiredParameter" in tables[api]) {
             clearRequiredParameterOptions();
             showElement("requiredParameter", true);
-            document.getElementById("requiredParameterTitle").innerText = tables[api]["requiredParameter"]["title"];
-            getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api);
+            $("#requiredParameterTitle").text(tables[api]["requiredParameter"]["title"]);
+            getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api, $("#apiKey").val());
         }
         else {
             showElement("requiredParameter", false);
@@ -105,7 +110,7 @@ $(document).ready(function () {
             // });
             $('#' + oldId + ' .deleteButton').attr('onclick', 'deleteTable(' + newId + ')');
             $('#' + oldId + ' .editButton').attr('onclick', 'editTable(' + newId + ')');
-            document.getElementById(oldId).setAttribute("id", newId);
+            $(`#${oldId}`).attr("id", newId);
         }
         if ($('#apiList li').length <= 0) {
             showElement("emptyApiListMessage", true);
@@ -116,7 +121,7 @@ $(document).ready(function () {
 
     //button for when the user is done choosing tables
     $("#submitButton").click(function () {
-        var ul = document.getElementById("apiList");
+        var ul = $("#apiList")[0];
         var items = ul.getElementsByTagName("li");
         var apiCalls = [];
         for (var item of items) {
@@ -126,6 +131,9 @@ $(document).ready(function () {
             }
             if (item.hasAttribute("data-require")) {
                 newTable["requiredParameter"] = item.getAttribute("data-require");
+            }
+            if (item.hasAttribute("data-optional")) {
+                newTable["optionalParameters"] = item.getAttribute("data-optional");
             }
             apiCalls.push(newTable);
         }
@@ -154,7 +162,7 @@ $(document).ready(function () {
             var data = result[tableInfo["requiredParameter"]["data"]];
             var nameCol = tableInfo["requiredParameter"]["nameCol"];
             var valCol = tableInfo["requiredParameter"]["valCol"];
-            var selector = document.getElementById("requiredParameterSelector");
+            var selector = $("#requiredParameterSelector")[0];
             for (var i = 0, len = data.length; i < len; i++) {
                 addOption(data[i][nameCol], data[i][valCol], selector);
             }
@@ -173,16 +181,109 @@ $(document).ready(function () {
         });
     }
 
+    var clearDate = function(id) {
+        $(`#${id}`).val("");
+    }
+
+    window.clearDate = clearDate;
+
+    var addOptionalParameters = function(api) {
+        for (const parameter of tables[api]['parameters']) {
+            let html = "";
+            if (parameter['type'] == 'options') {
+                let type = parameter['type'];
+                let id = parameter['parameter'];
+                let name = parameter['name'];
+                let defaultOption = parameter['default'];
+                let options = [
+                    `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
+                        `<div class="input-group-prepend">`,
+                            `<label class="input-group-text" for="input-${id}">${name}</label>`,
+                        `</div>`,
+
+                        `<select class="custom-select" id="input-${id}">`,
+                        `<option value="nosel" selected>${defaultOption}</option>`
+                    ];
+                
+                for (const option of parameter['options']) {
+                    options.push(`<option value="${option['value']}">${option['name']}</option>`);
+                }
+                options.push(...[
+                        `</select>`,
+                    `</div>`
+                ]);
+                html = options.join("\n");
+            }
+            else if (parameter['type'] == 'boolean') {
+                let type = parameter['type'];
+                let id = parameter['parameter'];
+                let name = parameter['name'];
+                html = [
+                    `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
+                        `<div class="input-group-prepend">`,
+                            `<label class="input-group-text" for="input-${id}">${name}</label>`,
+                        `</div>`,
+
+                        `<select class="custom-select" id="input-${id}">`,
+                            `<option selected value="false">False</option>`,
+                            `<option value="true">True</option>`,
+                        `</select>`,
+                    `</div>`
+                ].join("\n");
+            }
+            else if (parameter['type'] == 'date') {
+                let type = parameter['type'];
+                let id = parameter['parameter'];
+                let name = parameter['name'];
+                html = [
+                    `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
+                        `<div class="input-group-prepend">`,
+                            `<label class="input-group-text" for="input-${id}">${name}</label>`,
+                        `</div>`,
+
+                        `<input type="date" class="form-control" id="input-${id}">`,
+
+                        `<div class="input-group-append">`,
+                            `<button class="btn btn-outline-danger" type="button" onclick="clearDate('input-${id}')">Clear</button>`,
+                        `</div>`,
+                    `</div>`
+                ].join("\n");
+            }
+            else if (parameter['type'] == 'string') {
+                let type = parameter['type'];
+                let id = parameter['parameter'];
+                let name = parameter['name'];
+                let placeholder = parameter['placeholder'];
+                html = [
+                    `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
+                        `<div class="input-group-prepend">`,
+                            `<label class="input-group-text" for="input-${id}">${name}</label>`,
+                        `</div>`,
+
+                        `<input type="text" class="form-control" placeholder="${placeholder}" id="input-${id}">`,
+                    `</div>`
+                ].join("\n");
+            }
+            $('#optionalParameterList').append(html);
+        }
+    }
+
     // button when starting to add a table
     $("#addButton").click(function () {
-        var api = document.getElementById("apiSelector").value;
-        document.getElementById("tableName").value = tables[api]["table"]["alias"];
-        document.getElementById("edit-section").setAttribute("currentTable", $('#apiList li').length)
+        var api = $("#apiSelector").val();
+        $("#tableName").val(tables[api]["table"]["alias"]);
+        $("#edit-section").attr("currentTable", $('#apiList li').length);
+
+        if ("parameters" in tables[api]) { //if the api call has optional parameters
+            showElement("optionalParameterSection", true);
+            addOptionalParameters(api);
+        }
+
         if ("requiredParameter" in tables[api]) { //if the api call requires a parameter
             showLoading(true);
             clearRequiredParameterOptions();
             showElement("requiredParameter", true);
-            document.getElementById("requiredParameterTitle").innerText = tables[api]["requiredParameter"]["title"];
+            $("#requiredParameterTitle").text(tables[api]["requiredParameter"]["title"]);
             getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api, $("#apiKey").val());
         }
         else { //if the api call does not require a parameter
@@ -195,86 +296,91 @@ $(document).ready(function () {
     // button when done editing a table
     $("#editDoneButton").click(function () {
         //check if id exists to see if this is an edit or an add
-        var id = document.getElementById("edit-section").getAttribute("currentTable");
+        var id = $("#edit-section").attr("currentTable");
         var ulLength = $('#apiList li').length;
+        var api = $("#apiSelector").val();
+        var title = $("#tableName").val();
         if (id < ulLength) { //editing table entry
-
-            $('#' + id + ' .title').text(document.getElementById("tableName").value);
-            var api = document.getElementById("apiSelector").value;
-
-            if ("requiredParameter" in tables[api]) {
-                var requiredParameter = document.getElementById("requiredParameterSelector").value;
-                document.getElementById(id).setAttribute("data-require", requiredParameter);
-            }
+            $('#' + id + ' .title').text(title);
         }
         else { //adding table entry
-
             //remove empty list message when adding first entry
             if (ulLength <= 0) {
                 showElement("emptyApiListMessage", false);
             }
+            let html = [
+            `<li data-api="${api}" class="list-group-item" id="${id}">`,
+                `<div class="row">`,
+                    `<div class="col titleColumn">`,
+                        `<div class="title">${title}</div>`,
+                    `</div>`,
+                    `<div class="col-xs-auto">`,
+                        `<span>`,
+                            `<button class="btn btn-light mx-1 editButton" type="button" onclick="editTable(${id})">Edit</button>`,
+                            `<button class="btn btn-light mx-1 deleteButton" type="button" onclick="deleteTable(${id})">Delete</button>`,
+                        `</span>`,
+                    `</div>`,
+                `</div>`,
+            `</li>`
+            ].join("\n");
 
-            //create entry
-            var li = document.createElement("li");
-            var api = document.getElementById("apiSelector").value;
-            li.setAttribute("data-api", api);
-            li.setAttribute("class", "list-group-item");
-            li.setAttribute("id", id);
-            if ("requiredParameter" in tables[api]) { //get required parameter if necessary
-                var requiredParameter = document.getElementById("requiredParameterSelector").value;
-                li.setAttribute("data-require", requiredParameter);
-            }
-
-            //create title
-            var title = document.createElement("div");
-            title.setAttribute("class", "title");
-            title.innerText = document.getElementById("tableName").value;
-
-            //create edit button
-            var editButton = document.createElement("button");
-            editButton.setAttribute("class", "btn btn-light mx-1 editButton");
-            editButton.setAttribute("type", "button");
-            editButton.innerText = "Edit";
-            // editButton.onclick = function () {
-            //     editTable(id);
-            // };
-
-            //create delete button
-            var deleteButton = document.createElement("button");
-            deleteButton.setAttribute("class", "btn btn-light mx-1 deleteButton");
-            deleteButton.setAttribute("type", "button");
-            deleteButton.innerText = "Delete";
-            // deleteButton.onclick = function () {
-            //     deleteTable(id);
-            // };
-
-            var buttonHolder = document.createElement("span");
-            buttonHolder.appendChild(editButton);
-            buttonHolder.appendChild(deleteButton);
-
-            var column1 = document.createElement('div');
-            column1.setAttribute("class", "col titleColumn");
-
-            var column2 = document.createElement('div');
-            column2.setAttribute("class", "col-xs-auto");
-
-            var row = document.createElement('div');
-            row.setAttribute("class", "row");
-
-            column1.appendChild(title);
-            column2.appendChild(buttonHolder);
-            row.appendChild(column1);
-            row.appendChild(column2);
-            li.appendChild(row);
-            document.getElementById("apiList").appendChild(li);
-
-            $('#' + id + ' .deleteButton').attr('onclick', 'deleteTable(' + id + ')');
-            $('#' + id + ' .editButton').attr('onclick', 'editTable(' + id + ')');
+            $('#apiList').append(html); 
         }
-        //parameters todo
+
+        if ("requiredParameter" in tables[api]) { //get required parameter if necessary
+            var requiredParameter = $("#requiredParameterSelector").val();
+            $(`#${id}`).attr("data-require", requiredParameter);
+        }
+        if ("parameters" in tables[api]) {
+            let parameterList = [];
+            let children = $('#optionalParameterList').children()
+            for (let i = 0; i < children.length; i++) {
+                let parameterInput = $(children[i]);
+                let name = parameterInput.attr('id');
+                let value = "";
+                if (parameterInput.attr('parametertype') == 'options') {
+                    let option = $(`#input-${name} option:selected`).val()
+                    if (option != 'nosel') {
+                        value = option;
+                    }
+                }
+                else if (parameterInput.attr('parametertype') == 'boolean') {
+                    let option = $(`#input-${name} option:selected`).val()
+                    if (option != 'false') {
+                        value = option;
+                    }
+                }
+                else if (parameterInput.attr('parametertype') == 'string') {
+                    value = $(`#input-${name}`).val()
+                }
+                else if (parameterInput.attr('parametertype') == 'date') {
+                    value = $(`#input-${name}`).val();
+                }
+                if (value != "")
+                {
+                    parameterList.push(
+                        {
+                            name: name,
+                            value: value
+                        }
+                    );
+                }
+            }
+            let parameterString = "";
+            let parameterListToJoin = []
+            for (const parameterSet of parameterList) {
+                parameterListToJoin.push([parameterSet['name'], parameterSet['value']].join('='))
+            }
+            parameterString = parameterListToJoin.join('&');
+            $(`#${id}`).attr("data-optional", parameterString);
+        }
+
 
         // switch back to api section
         switchPage("edit-section", "api-section");
+        showElement("optionalParameterSection", false);
+        $("#optionalParameterSelector").empty();
+        $("#optionalParameterList").html("");
     });
 
     // button to go back to page for entering the url and api key
@@ -285,10 +391,6 @@ $(document).ready(function () {
     // button to go from credentials section to api section
     $("#credentialsButton").click(function () {
         switchPage("url-section", "api-section");
-    });
-
-    // button to add a parameter to a api call in the edit section
-    $("#addParameterButton").click(function () {
     });
 
     addTableOptions(tables);

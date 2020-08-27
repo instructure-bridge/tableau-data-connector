@@ -65,7 +65,100 @@ export var tables = {
             }]
         },
         path: "/api/author/users",
-        data: "users"
+        data: "users",
+        parameters: [
+            {
+                name: "Sort",
+                parameter: "sort",
+                type: "options",
+                default: "Default",
+                options: [
+                    {
+                        name: "Name",
+                        value: "name"
+                    },
+                    {
+                        name: "Number of Completed Courses",
+                        value: "complete_courses_count"
+                    },
+                    {
+                        name: "Next Due Date",
+                        value: "next_due_date"
+                    }
+                ]
+            },
+            {
+                name: "Search",
+                parameter: "search",
+                type: "string",
+                placeholder: "search terms"
+            },
+            {
+                name: "Only Deleted",
+                parameter: "only_deleted",
+                type: "boolean",
+            },
+            {
+                name: "Include Deleted",
+                parameter: "with_deleted",
+                type: "boolean",
+            },
+            {
+                name: "Role",
+                parameter: "role",
+                type: "options",
+                default: "Any",
+                options: [
+                    {
+                        name: "Account Admin",
+                        value: "account_admin"
+                    },
+                    {
+                        name: "Admin",
+                        value: "admin"
+                    },
+                    {
+                        name: "Author",
+                        value: "author"
+                    }
+                ]
+            },
+            {
+                name: "Updated After",
+                parameter: "updated_after",
+                type: "date"
+            },
+            {
+                name: "Created After",
+                parameter: "created_after",
+                type: "date"
+            },
+            {
+                name: "Deleted After",
+                parameter: "deleted_after",
+                type: "date"
+            },
+            {
+                name: "Updated Before",
+                parameter: "updated_before",
+                type: "date"
+            },
+            {
+                name: "Created Before",
+                parameter: "created_before",
+                type: "date"
+            },
+            {
+                name: "Deleted Before",
+                parameter: "deleted_before",
+                type: "date"
+            },
+            {
+                name: "Only Managers",
+                parameter: "only_managers",
+                type: "boolean",
+            }
+        ]
     },
     authorCourseTemplates: {
         table: {
@@ -380,5 +473,167 @@ export var tables = {
         },
         path: "/api/author/programs",
         data: "programs"
+    },
+    authorListProgramLearners: {
+        table: {
+            id: "authorListProgramLearners",
+            alias: "Specific Program Learners",
+            columns: [{
+                alias: "User ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Name",
+                id: "name",
+                dataType: "string"
+            }]
+        },
+        path: "/api/author/programs/*/learners",
+        data: "learners",
+        requiredParameter: {
+            title: "Program",
+            path: "/api/author/programs",
+            data: "programs",
+            nameCol: "title",
+            valCol: "id"
+        }
+    },
+    authorLiveCourses: {
+        table: {
+            id: "authorLiveCourses",
+            alias: "List Live Courses",
+            columns: [{
+                alias: "Live Course ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Live Course Title",
+                id: "title",
+                dataType: "string"
+            }]
+        },
+        path: "/api/author/live_courses",
+        data: "live_courses"
+    },
+    authorLiveCourseSessions: {
+        table: {
+            id: "authorLiveCourseSessions",
+            alias: "Specific Program Learners",
+            columns: [{
+                alias: "Live Course Session ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Start At",
+                id: "start_at",
+                dataType: "datetime"
+            }, {
+                alias: "End At",
+                id: "end_at",
+                dataType: "datetime"
+            }, {
+                alias: "Location",
+                id: "location",
+                dataType: "string"
+            }, {
+                alias: "Number of Seats",
+                id: "seats",
+                dataType: "int"
+            }]
+        },
+        path: "/api/author/live_courses/*/sessions",
+        data: "sessions",
+        requiredParameter: {
+            title: "Live Course",
+            path: "/api/author/live_courses",
+            data: "live_courses",
+            nameCol: "title",
+            valCol: "id"
+        }
+    },
+    authorTasks: {
+        table: {
+            id: "authorTasks",
+            alias: "List Checkpoints",
+            columns: [{
+                alias: "Checkpoint ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Checkpoint Title",
+                id: "namr",
+                dataType: "string"
+            }]
+        },
+        path: "/api/author/tasks",
+        data: "tasks"
+    },
+    authorGroups: {
+        table: {
+            id: "authorGroups",
+            alias: "List Groups",
+            columns: [{
+                alias: "Group ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Group Name",
+                id: "name",
+                dataType: "string"
+            }]
+        },
+        path: "/api/author/groups",
+        data: "groups"
+    },
+    authorTags: {
+        table: {
+            id: "authorTags",
+            alias: "List Tags",
+            columns: [{
+                alias: "Tag ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Tag Name",
+                id: "name",
+                dataType: "string"
+            }]
+        },
+        path: "/api/author/tags",
+        data: "tags"
+    },
+    authorTaggedItems: {
+        table: {
+            id: "authorTaggedItems",
+            alias: "Tagged Items",
+            columns: [{
+                alias: "Item ID",
+                id: "id",
+                dataType: "int"
+            }, {
+                alias: "Tag ID",
+                id: "tag_id",
+                dataType: "int"
+            }, {
+                alias: "Taggable Type",
+                id: "taggable_type",
+                dataType: "string"
+            }, {
+                alias: "Item Title",
+                id: "item-title",
+                parent_id: "data",
+                sub_id: "title",
+                dataType: "string"
+            }]
+        },
+        path: "/api/author/tags/*/taggings",
+        data: "taggings",
+        requiredParameter: {
+            title: "Tag",
+            path: "/api/author/tags",
+            data: "tags",
+            nameCol: "name",
+            valCol: "id"
+        }
     }
 };
