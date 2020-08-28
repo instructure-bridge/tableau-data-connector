@@ -148,7 +148,7 @@ describe('selenium', function () {
 
     }, 30000);
 
-    it('test adding and editing a table with a required parameter', async function () {
+    it('test adding a table with a required parameter', async function () {
         await driver.get('http://localhost:8888');
         let tableToUse = 'authorListEnrollments';
 
@@ -163,12 +163,12 @@ describe('selenium', function () {
         await driver.findElement(By.id('apiSelector')).click();
         await driver.findElement(By.xpath(`//option[@value="${tableToUse}"]`)).click();
         await driver.findElement(By.id('addButton')).click();
-        await driver.wait(until.elementIsVisible(driver.findElement(By.id('edit-section'))), 20000);
+        await driver.wait(until.elementIsVisible(driver.findElement(By.id('edit-section'))), 60000);
         let requiredParameter = await driver.findElement(By.id('requiredParameterSelector')).getAttribute('value');
         await driver.findElement(By.id('editDoneButton')).click();
         let setRequiredParameter = await driver.findElement(By.id('0')).getAttribute('data-require');
         expect(setRequiredParameter).toEqual(requiredParameter);
-    }, 60000);
+    },  120000);
 
     afterAll(function () {
         driver.quit()
