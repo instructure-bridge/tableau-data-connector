@@ -87,8 +87,10 @@ $(document).ready(function () {
             if (optionalParameterString != "") {
                 let optionalParameterArray = optionalParameterString.split('&')
                 for (const op of optionalParameterArray) {
-                    let key = op.split(/=(.+)/)[0]
-                    let value = op.split(/=(.+)/)[1]
+                    let optionalParameterSplit = op.split('=');
+                    let key = optionalParameterSplit[0];
+                    let value = optionalParameterSplit[1];
+                    value = decodeURIComponent(value);
                     $(`#input-${key}`).val(value);
                 }
             }
@@ -386,6 +388,7 @@ $(document).ready(function () {
                 }
                 if (value != "")
                 {
+                    value = encodeURIComponent(value);
                     parameterList.push(
                         {
                             name: name,
@@ -401,6 +404,7 @@ $(document).ready(function () {
             }
             parameterString = parameterListToJoin.join('&');
             $(`#${id}`).attr("data-optional", parameterString);
+            console.log(parameterString);
         }
 
 

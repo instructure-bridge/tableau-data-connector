@@ -1,17 +1,26 @@
 import 'chromedriver'
 import chrome from 'selenium-webdriver/chrome'
-import { Builder, By, Keys } from 'selenium-webdriver';
+import { Builder, By, Key, until } from 'selenium-webdriver';
 
 const screen = {
     width: 640,
     height: 480
 };
 
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
 
 describe('selenium', function () {
     let driver;
+    let API_KEY;
+    let API_URL;
 
     beforeAll(async function () {
+        API_KEY = process.env.API_KEY;
+        API_URL = process.env.API_URL;
+
         driver = await new Builder().forBrowser('chrome').setChromeOptions(new chrome.Options().headless().windowSize(screen)).build();
     }, 30000);
 
@@ -107,7 +116,7 @@ describe('selenium', function () {
 
         await driver.findElement(By.id('credentialsButton')).click();
         await driver.findElement(By.id('apiSelector')).click();
-        await driver.findElement(By.xpath(`//option[@value="${tableToUse}"]`));
+        await driver.findElement(By.xpath(`//option[@value="${tableToUse}"]`)).click();
 
         for (let id = 0; id < numTables; id++) {
             await driver.findElement(By.id('addButton')).click();
@@ -139,9 +148,26 @@ describe('selenium', function () {
 
     }, 30000);
 
-    it('test adding, editing, and deleting table with a required parameter', async function () {
+    it('test adding and editing a table with a required parameter', async function () {
         await driver.get('http://localhost:8888');
+        let tableToUse = 'authorListEnrollments';
 
+        let urlInput = await driver.findElement(By.id('url'));
+        await urlInput.clear();
+        await urlInput.sendKeys(API_URL);
+        let keyInput = await driver.findElement(By.id('apiKey'));
+        await keyInput.clear();
+        await keyInput.sendKeys(API_KEY);
+
+        await driver.findElement(By.id('credentialsButton')).click();
+        await driver.findElement(By.id('apiSelector')).click();
+        await driver.findElement(By.xpath(`//option[@value="${tableToUse}"]`)).click();
+        await driver.findElement(By.id('addButton')).click();
+        await driver.wait(until.elementIsVisible(driver.findElement(By.id('edit-section'))), 20000);
+        let requiredParameter = await driver.findElement(By.id('requiredParameterSelector')).getAttribute('value');
+        await driver.findElement(By.id('editDoneButton')).click();
+        let setRequiredParameter = await driver.findElement(By.id('0')).getAttribute('data-require');
+        expect(setRequiredParameter).toEqual(requiredParameter);
     }, 60000);
 
     afterAll(function () {
