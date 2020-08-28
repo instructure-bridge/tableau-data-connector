@@ -295,7 +295,99 @@ export var tables = {
             }]
         },
         path: "/api/author/course_templates",
-        data: "course_templates"
+        data: "course_templates",
+        parameters: [
+            {
+                name: "Sort",
+                parameter: "sort",
+                type: "options",
+                default: "Default",
+                options: [
+                    {
+                        name: "Newest",
+                        value: "newest"
+                    },
+                    {
+                        name: "Title",
+                        value: "title"
+                    },
+                    {
+                        name: "Updated",
+                        value: "updated"
+                    },
+                    {
+                        name: "Archived",
+                        value: "archived"
+                    }
+                ]
+            },
+            {
+                name: "Search",
+                parameter: "search",
+                type: "string",
+                placeholder: "search terms"
+            },
+            {
+                name: "Only Deleted",
+                parameter: "only_deleted",
+                type: "boolean",
+            },
+            {
+                name: "Include Deleted",
+                parameter: "with_deleted",
+                type: "boolean",
+            },
+            {
+                name: "Role",
+                parameter: "role",
+                type: "options",
+                default: "Any",
+                options: [
+                    {
+                        name: "Account Admin",
+                        value: "account_admin"
+                    },
+                    {
+                        name: "Admin",
+                        value: "admin"
+                    },
+                    {
+                        name: "Author",
+                        value: "author"
+                    }
+                ]
+            },
+            {
+                name: "Updated After",
+                parameter: "updated_after",
+                type: "date"
+            },
+            {
+                name: "Created After",
+                parameter: "created_after",
+                type: "date"
+            },
+            {
+                name: "Deleted After",
+                parameter: "deleted_after",
+                type: "date"
+            },
+            {
+                name: "Updated Before",
+                parameter: "updated_before",
+                type: "date"
+            },
+            {
+                name: "Created Before",
+                parameter: "created_before",
+                type: "date"
+            },
+            {
+                name: "Deleted Before",
+                parameter: "deleted_before",
+                type: "date"
+            }
+        ]
     },
     authorListEnrollments: {
         table: {
@@ -518,7 +610,7 @@ export var tables = {
     authorLiveCourseSessions: {
         table: {
             id: "authorLiveCourseSessions",
-            alias: "Specific Program Learners",
+            alias: "Specific Live Course Sessions",
             columns: [{
                 alias: "Live Course Session ID",
                 id: "id",

@@ -6,6 +6,7 @@ import Axios from 'axios';
 
 //class containing tableau specific code
 var tableauHelper = new TableauHelper(performApiCall);
+var errorMessage = 'Could not fetch course data. Check that the url and api key are correct.';
 
 //runs these functions on page load
 $(document).ready(function () {
@@ -77,17 +78,34 @@ $(document).ready(function () {
         $("#tableName").val($('#' + id + ' .title').text());
         $("#edit-section").attr("currentTable", id);
         var api = $(`#${id}`).attr("data-api");
+        var requiredParameter = $(`#${id}`).attr("data-require");
+        var optionalParameterString = $(`#${id}`).attr("data-optional");
 
         if ("parameters" in tables[api]) { //if the api call has optional parameters
             showElement("optionalParameterSection", true);
             addOptionalParameters(api);
+            if (optionalParameterString != "") {
+                let optionalParameterArray = optionalParameterString.split('&')
+                for (const op of optionalParameterArray) {
+                    let key = op.split(/=(.+)/)[0]
+                    let value = op.split(/=(.+)/)[1]
+                    $(`#input-${key}`).val(value);
+                }
+            }
         }
 
         if ("requiredParameter" in tables[api]) {
             clearRequiredParameterOptions();
             showElement("requiredParameter", true);
             $("#requiredParameterTitle").text(tables[api]["requiredParameter"]["title"]);
-            getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api, $("#apiKey").val());
+            try {
+                getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api, $("#apiKey").val(), requiredParameter);
+            }
+            catch (error) {
+                console.log(error);
+                showErrorMessage(errorMessage, 5);
+                showLoading(false);
+            }
         }
         else {
             showElement("requiredParameter", false);
@@ -148,7 +166,7 @@ $(document).ready(function () {
     });
 
     //performs api call to grab data for required parameters
-    var getRequiredParameterData = function (apiCall, tableId, apiKey) {
+    var getRequiredParameterData = function (apiCall, tableId, apiKey, oldParam) {
         const urlObj = setUrl(apiCall, apiKey)
 
         Axios({
@@ -167,9 +185,12 @@ $(document).ready(function () {
                 addOption(data[i][nameCol], data[i][valCol], selector);
             }
             if (result.meta.hasOwnProperty("next")) {
-                getRequiredParameterData(result.meta.next, tableId, apiKey);
+                getRequiredParameterData(result.meta.next, tableId, apiKey, oldParam);
             }
             else {
+                if (oldParam != undefined) {
+                    $("#requiredParameterSelector").val(oldParam);
+                }
                 switchPage("api-section", "edit-section");
                 showLoading(false);
             }
@@ -177,7 +198,7 @@ $(document).ready(function () {
         .catch(function (error) {
             console.log(error);
             showLoading(false);
-            showErrorMessage('Could not fetch course data, check that the url and api key are correct.', 5);
+            showErrorMessage(errorMessage, 5);
         });
     }
 
@@ -202,7 +223,7 @@ $(document).ready(function () {
                         `</div>`,
 
                         `<select class="custom-select" id="input-${id}">`,
-                        `<option value="nosel" selected>${defaultOption}</option>`
+                            `<option value="nosel" selected>${defaultOption}</option>`
                     ];
                 
                 for (const option of parameter['options']) {
@@ -284,7 +305,14 @@ $(document).ready(function () {
             clearRequiredParameterOptions();
             showElement("requiredParameter", true);
             $("#requiredParameterTitle").text(tables[api]["requiredParameter"]["title"]);
-            getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api, $("#apiKey").val());
+            try {
+                getRequiredParameterData(new URL(tables[api]["requiredParameter"]["path"], $("#url").val()), api, $("#apiKey").val(), undefined);
+            }
+            catch (error) {
+                console.log(error);
+                showErrorMessage(errorMessage, 5);
+                showLoading(false);
+            }
         }
         else { //if the api call does not require a parameter
             showElement("requiredParameter", false);
@@ -381,6 +409,9 @@ $(document).ready(function () {
         showElement("optionalParameterSection", false);
         $("#optionalParameterSelector").empty();
         $("#optionalParameterList").html("");
+        if ($("#optionalParameterList").hasClass('show')) {
+            $('#optionalParameterButton').click();
+        }
     });
 
     // button to go back to page for entering the url and api key
