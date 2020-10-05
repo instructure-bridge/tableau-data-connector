@@ -16,6 +16,7 @@ $(document).ready(function () {
         var option = document.createElement('option');
         option.innerText = name;
         option.setAttribute('value', value);
+        option.setAttribute('id', value);
         selector.appendChild(option);
     };
 
