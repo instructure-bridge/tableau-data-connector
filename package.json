@@ -12,6 +12,7 @@
     "reset": "rm -rf ./node_modules && yarn cache clean && yarn install",
     "webpack:test": "NODE_ENV=test yarn webpack --silent",
     "lint": "yarn eslint --plugin prettier --rule prettier/prettier:error src/*",
+    "prettier-format": "yarn prettier --config .prettierrc.js 'src/**/*.ts' --write",
     "selenium": "yarn jest -c jest.config.selenium.js",
     "integration": "start-server-and-test 'yarn start' http://localhost:8888 'yarn selenium'",
     "test": "yarn webpack:test && NODE_ENV=test yarn jest"
