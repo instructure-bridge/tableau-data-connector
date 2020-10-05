@@ -1,3 +1,4 @@
+// @ts-nocheck
 import 'chromedriver'
 import chrome from 'selenium-webdriver/chrome'
 import { Builder, By, Key, until } from 'selenium-webdriver';
@@ -89,7 +90,7 @@ describe('selenium', function () {
         await driver.findElement(By.id('addButton')).click();
         await driver.findElement(By.id('editDoneButton')).click();
         let tableName1 = await driver.findElement(By.id('0')).findElement(By.className('title')).getAttribute("innerText");
-        
+
         expect(tableName1).toEqual('List Users');
 
         await driver.findElement(By.id('0')).findElement(By.className('editButton')).click();
@@ -98,12 +99,12 @@ describe('selenium', function () {
         await nameInput.sendKeys(newTableName);
         await driver.findElement(By.id('editDoneButton')).click();
         let tableName2 = await driver.findElement(By.id('0')).findElement(By.className('title')).getAttribute("innerText");
-        
+
         expect(tableName2).toEqual(newTableName);
 
         await driver.findElement(By.id('0')).findElement(By.className('deleteButton')).click();
-        
-        await expect(async() => { 
+
+        await expect(async() => {
             await driver.findElement(By.id('0'));
         }).rejects.toThrow('no such element');
 
@@ -141,7 +142,7 @@ describe('selenium', function () {
         }
         for (let id = numTables - 1; id >= 0; id--) {
             await driver.findElement(By.id('0')).findElement(By.className('deleteButton')).click();
-            await expect(async() => { 
+            await expect(async() => {
                 await driver.findElement(By.id(id.toString()));
             }).rejects.toThrow('no such element');
         }

@@ -1,4 +1,5 @@
-import { tables } from './tables.js'
+// @ts-nocheck
+import { tables } from './tables/api/author'
 
 export default class TableauHelper {
     constructor(apiMethod) {
@@ -21,7 +22,7 @@ export default class TableauHelper {
             var data = JSON.parse(tableau.connectionData);
             var chosenTables = []
             var idCounter = 1;
-    
+
             // takes each custom table and grabs the corredponding template table data
             for (var table of data.tables) {
                 var apiCall = table["apiCall"]
@@ -30,7 +31,7 @@ export default class TableauHelper {
                 newTable["table"]["alias"] = table["title"];
                 newTable["table"]["id"] = id;
                 var idCounter = idCounter + 1;
-    
+
                 if ("requiredParameter" in table) {
                     var oldApiCall = newTable["path"];
                     var newApiCall = oldApiCall.replace("*", table["requiredParameter"]);

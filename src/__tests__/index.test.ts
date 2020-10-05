@@ -1,5 +1,6 @@
-import * as bridgeApi from '../bridgeApi.js'
-import { tables } from '../tables.js'
+// @ts-nocheck
+import * as bridgeApi from '../bridgeApi'
+import { tables } from '../tables/api/author'
 
 class FakeTable {
   constructor(id) {
@@ -10,7 +11,7 @@ class FakeTable {
   get tableInfo(){
     return this.tableinfo;
   }
- 
+
   get didAppend() {
     return this.wasAppend;
   }
@@ -20,7 +21,7 @@ class FakeTable {
 }
 
 describe('bridgeAPI', function () {
-  
+
   it('try row code', function() {
     let table = new FakeTable("table1");
     let table1 = JSON.parse(JSON.stringify(tables["authorListEnrollments"]));

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Axios from 'axios';
 
 export function setUrl(apiCall, apiKey) {
@@ -78,7 +79,7 @@ export function performApiCall(table, doneCallback, apiCall, myTables, apiKey) {
     Axios({
         method: 'get',
         url: urlObj.apiCall,
-        headers: urlObj.headers    
+        headers: urlObj.headers
     })
     .then(function (response) {
         var result = response.data;

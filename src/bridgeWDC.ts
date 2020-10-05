@@ -1,7 +1,7 @@
-require('./main.css');
-import { tables } from './tables.js'
-import TableauHelper from './tableau.js'
-import { setUrl, performApiCall } from './bridgeApi.js'
+// @ts-nocheck
+import { tables } from './tables/api/author';
+import TableauHelper from './tableau';
+import { setUrl, performApiCall } from './bridgeApi';
 import Axios from 'axios';
 
 //class containing tableau specific code
@@ -174,7 +174,7 @@ $(document).ready(function () {
         Axios({
             method: 'get',
             url: urlObj.apiCall,
-            headers: urlObj.headers    
+            headers: urlObj.headers
         })
         .then(function (response) {
             var result = response.data;
@@ -227,7 +227,7 @@ $(document).ready(function () {
                         `<select class="custom-select" id="input-${id}">`,
                             `<option value="nosel" selected>${defaultOption}</option>`
                     ];
-                
+
                 for (const option of parameter['options']) {
                     options.push(`<option value="${option['value']}">${option['name']}</option>`);
                 }
@@ -354,7 +354,7 @@ $(document).ready(function () {
             `</li>`
             ].join("\n");
 
-            $('#apiList').append(html); 
+            $('#apiList').append(html);
         }
 
         if ("requiredParameter" in tables[api]) { //get required parameter if necessary
