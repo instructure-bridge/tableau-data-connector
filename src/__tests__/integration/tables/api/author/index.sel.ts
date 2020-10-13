@@ -19,21 +19,22 @@ describe('tables', function () {
                 new chrome.Options().headless().windowSize(screen),
             )
             .build();
-    }, 30000);
+    }, 3000000);
 
     it('test adding, editing, and deleting table', async function () {
-        let tableToUse = 'authorUser';
-        let newTableName = 'New Table Name Test 1234';
+        const tableToUse = 'authorUser';
+        const newTableName = 'New Table Name Test 1234';
 
         await driver.get('http://localhost:8888');
-
         await driver.findElement(By.id('credentialsButton')).click();
         await driver.findElement(By.id('apiSelector')).click();
-        await driver.findElement(By.xpath(`//option[@id="${tableToUse}"]`));
+        await driver
+            .findElement(By.xpath(`//option[@id="${tableToUse}"]`))
+            .click();
         await driver.findElement(By.id('addButton')).click();
         await driver.findElement(By.id('editDoneButton')).click();
 
-        let tableName1 = await driver
+        const tableName1 = await driver
             .findElement(By.id(tableToUse))
             .getAttribute('innerText');
 
@@ -41,13 +42,15 @@ describe('tables', function () {
 
         await driver
             .findElement(By.id('0'))
-            .findElement(By.className('editButton'))
+            .findElement(By.id('editList'))
             .click();
-        let nameInput = await driver.findElement(By.id('tableName'));
+
+        const nameInput = await driver.findElement(By.id('tableName'));
+
         await nameInput.clear();
         await nameInput.sendKeys(newTableName);
         await driver.findElement(By.id('editDoneButton')).click();
-        let tableName2 = await driver
+        const tableName2 = await driver
             .findElement(By.id('0'))
             .findElement(By.className('title'))
             .getAttribute('innerText');
@@ -56,18 +59,18 @@ describe('tables', function () {
 
         await driver
             .findElement(By.id('0'))
-            .findElement(By.className('deleteButton'))
+            .findElement(By.id('deleteList'))
             .click();
 
         await expect(async () => {
             await driver.findElement(By.id('0'));
         }).rejects.toThrow('no such element');
-    }, 30000);
+    }, 3000000);
 
     it('test adding, editing, and deleting multiple tables', async function () {
         await driver.get('http://localhost:8888');
-        let tableToUse = 'authorUser';
-        let numTables = 20;
+        const tableToUse = 'authorUser';
+        const numTables = 20;
 
         await driver.findElement(By.id('credentialsButton')).click();
         await driver.findElement(By.id('apiSelector')).click();
@@ -81,7 +84,7 @@ describe('tables', function () {
         }
 
         for (let id = 0; id < numTables; id++) {
-            let tableName = await driver
+            const tableName = await driver
                 .findElement(By.id(id.toString()))
                 .findElement(By.className('title'))
                 .getAttribute('innerText');
@@ -91,15 +94,15 @@ describe('tables', function () {
         for (let id = 0; id < numTables; id++) {
             await driver
                 .findElement(By.id(id.toString()))
-                .findElement(By.className('editButton'))
+                .findElement(By.id('editList'))
                 .click();
-            let nameInput = await driver.findElement(By.id('tableName'));
+            const nameInput = await driver.findElement(By.id('tableName'));
             await nameInput.clear();
             await nameInput.sendKeys('Table' + id);
             await driver.findElement(By.id('editDoneButton')).click();
         }
         for (let id = 0; id < numTables; id++) {
-            let tableName = await driver
+            const tableName = await driver
                 .findElement(By.id(id.toString()))
                 .findElement(By.className('title'))
                 .getAttribute('innerText');
@@ -108,7 +111,7 @@ describe('tables', function () {
         for (let id = numTables - 1; id >= 0; id--) {
             await driver
                 .findElement(By.id('0'))
-                .findElement(By.className('deleteButton'))
+                .findElement(By.id('deleteList'))
                 .click();
             await expect(async () => {
                 await driver.findElement(By.id(id.toString()));

@@ -1,94 +1,117 @@
-// @ts-nocheck
+/* Allow the use of `any` type until tableauwdc adds types, or we add our own*/
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { isJsonString } from './utils';
 import { tables } from './tables/api/author';
+declare const tableau: any; // Declared here, since tableauwdc-2.3.latest.min.js is made globally available via html src.
 
-export default class TableauHelper {
-    constructor(apiMethod) {
-        //tableau create connector
+class Tableau {
+    myConnector: any;
+    myTables: any;
+
+    constructor(apiMethod: any) {
         this.myConnector = tableau.makeConnector();
-
         this.myTables = {};
-        var helper = this;
 
-        //tableau init
+        // tableau init
         this.myConnector.init = function (initCallback) {
-            tableau.log('init');
+            tableau.log('tableau web connector initialization');
             tableau.authType = tableau.authTypeEnum.custom;
             initCallback();
         };
 
-        //tableau get schema
-        this.myConnector.getSchema = function (schemaCallback) {
+        // tableau get schema
+        // explicitly using arrow function here, as it allows access to nested(this) objects
+        this.myConnector.getSchema = (schemaCallback) => {
             tableau.log('getSchema');
-            var data = JSON.parse(tableau.connectionData);
-            var chosenTables = [];
-            var idCounter = 1;
+            const data = JSON.parse(tableau.connectionData);
+            const chosenTables = [];
+            let idCounter = 1;
 
             // takes each custom table and grabs the corredponding template table data
-            for (var table of data.tables) {
-                var apiCall = table['apiCall'];
-                var newTable = JSON.parse(JSON.stringify(tables[apiCall]));
-                var id = 'table' + idCounter;
+            for (const table of data.tables) {
+                const apiCall = table['apiCall'];
+                const newTable = JSON.parse(JSON.stringify(tables[apiCall]));
+                const id = 'table' + idCounter;
                 newTable['table']['alias'] = table['title'];
                 newTable['table']['id'] = id;
-                var idCounter = idCounter + 1;
+                idCounter = idCounter + 1;
 
                 if ('requiredParameter' in table) {
-                    var oldApiCall = newTable['path'];
-                    var newApiCall = oldApiCall.replace(
+                    const oldApiCall = newTable['path'];
+                    const newApiCall = oldApiCall.replace(
                         '*',
                         table['requiredParameter'],
                     );
                     newTable['path'] = newApiCall;
                 }
                 if ('optionalParameters' in table) {
-                    var oldApiCall = newTable['path'];
-                    var newApiCall =
+                    const oldApiCall = newTable['path'];
+                    const newApiCall =
                         oldApiCall + '?' + table['optionalParameters'];
                     newTable['path'] = newApiCall;
                 }
-                helper.myTables[id] = newTable;
+                this.myTables[id] = newTable;
                 chosenTables.push(newTable.table);
+                console.log(chosenTables);
             }
             schemaCallback(chosenTables);
         };
 
         //tableau get data
-        this.myConnector.getData = function (table, doneCallback) {
+        this.myConnector.getData = (table, doneCallback) => {
             tableau.log('getData');
-            var data = JSON.parse(tableau.connectionData);
-            var tableid = table.tableInfo.id;
-            var path = helper.myTables[tableid].path;
-            var apiCall = new URL(path, data.url);
+            const data = JSON.parse(tableau.connectionData);
+            const tableid = table.tableInfo.id;
+            const path = this.myTables[tableid].path;
+            const apiCall = new URL(path, data.url);
             apiMethod(
                 table,
                 doneCallback,
                 apiCall,
-                helper.myTables,
+                this.myTables,
                 tableau.password,
             );
+            console.log('in get data');
+            console.log(apiMethod);
         };
 
         //tableau connector registration
         tableau.registerConnector(this.myConnector);
+        console.log('after register connector');
     }
 
-    getApiKey() {
-        return tableau.password;
-    }
-
-    setApiKey(apiKey) {
+    set apiKey(apiKey: any) {
         tableau.password = apiKey;
     }
 
-    setConnectionData(data) {
-        tableau.connectionData = data;
+    get apiKey(): any {
+        return tableau.password;
     }
 
-    setConnectionName(name) {
+    set connectionData(data: any) {
+        if (isJsonString(data)) {
+            tableau.connectionData = data;
+        } else {
+            tableau.connectionData = JSON.stringify(data);
+        }
+    }
+
+    get connectionData(): any {
+        return tableau.connectionData;
+    }
+
+    set connectionName(name: any) {
         tableau.connectionName = name;
     }
 
-    tableauSubmit() {
+    get connectionName(): any {
+        return tableau.connectionName;
+    }
+
+    tableauSubmit(): any {
         tableau.submit();
     }
 }
+
+export { Tableau };

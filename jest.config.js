@@ -14,4 +14,7 @@ module.exports = {
         '<rootDir>/src/__tests__/test-dist/',
         '<rootDir>/webpack/',
     ],
+    setupFiles: [
+      '<rootDir>/src/__tests__/setup/tableauwdc-2.3.latest.js'
+    ],
 };

@@ -1,24 +1,7 @@
 // @ts-nocheck
 import * as bridgeApi from '../bridgeApi';
 import { tables } from '../tables/api/author';
-
-class FakeTable {
-    constructor(id) {
-        this.tableinfo = { id: id };
-        this.wasAppend = false;
-    }
-
-    get tableInfo() {
-        return this.tableinfo;
-    }
-
-    get didAppend() {
-        return this.wasAppend;
-    }
-    appendRows(row) {
-        this.wasAppend = true;
-    }
-}
+import { FakeTable } from './helpers';
 
 describe('bridgeAPI', function () {
     it('try row code', function () {
