@@ -23,6 +23,7 @@
     "@babel/preset-typescript": "^7.10.4",
     "@testing-library/dom": "^7.22.0",
     "@testing-library/jest-dom": "^5.11.2",
+    "@types/axios": "^0.14.0",
     "@types/bootstrap": "^4.5.0",
     "@types/chromedriver": "^81.0.0",
     "@types/eslint": "^7.2.3",

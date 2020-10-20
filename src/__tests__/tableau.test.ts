@@ -7,7 +7,7 @@ describe('tableau', function () {
 
     beforeEach(() => {
         table = new FakeTable('table1');
-        tableau = new Tableau('foo');
+        tableau = new Tableau();
     });
 
     it('sets connection data', async () => {

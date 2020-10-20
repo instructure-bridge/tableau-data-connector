@@ -3,13 +3,15 @@
 
 import { isJsonString } from './utils';
 import { tables } from './tables/api/author';
+import { Bridge } from './api/bridge';
+
 declare const tableau: any; // Declared here, since tableauwdc-2.3.latest.min.js is made globally available via html src.
 
 class Tableau {
     myConnector: any;
     myTables: any;
 
-    constructor(apiMethod: any) {
+    constructor() {
         this.myConnector = tableau.makeConnector();
         this.myTables = {};
 
@@ -65,20 +67,19 @@ class Tableau {
             const tableid = table.tableInfo.id;
             const path = this.myTables[tableid].path;
             const apiCall = new URL(path, data.url);
-            apiMethod(
+            const bridgeApi = new Bridge(apiCall, tableau.password);
+
+            bridgeApi.performApiCall(
                 table,
                 doneCallback,
                 apiCall,
                 this.myTables,
                 tableau.password,
             );
-            console.log('in get data');
-            console.log(apiMethod);
         };
 
         //tableau connector registration
         tableau.registerConnector(this.myConnector);
-        console.log('after register connector');
     }
 
     set apiKey(apiKey: any) {

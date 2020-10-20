@@ -1,13 +1,12 @@
 import { Buttons } from './buttons';
 import { Tableau } from '../tableau';
-import { performApiCall } from '../bridgeApi';
 
 class Submit extends Buttons {
     tableau: any;
 
     constructor() {
         super();
-        this.tableau = new Tableau(performApiCall);
+        this.tableau = new Tableau();
 
         $('#submitButton').on('click', () => {
             const ul = $('#apiList')[0];

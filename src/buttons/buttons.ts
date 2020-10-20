@@ -1,5 +1,5 @@
 import $ from 'jquery/dist/jquery.slim';
-import { setUrl } from '../bridgeApi';
+import { Bridge } from '../api/bridge';
 import Axios from 'axios';
 import { tables, TableName } from '../tables/api/author';
 
@@ -234,7 +234,7 @@ class Buttons {
     }
 
     getRequiredParameterData(apiCall, tableId, apiKey, oldParam) {
-        const urlObj = setUrl(apiCall, apiKey);
+        const urlObj = Bridge.setUrl(apiCall, apiKey);
 
         Axios({
             method: 'get',

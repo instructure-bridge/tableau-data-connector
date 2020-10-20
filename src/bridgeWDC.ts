@@ -20,9 +20,6 @@ $(document).ready(function () {
     // Add tables that are defined in ./tables/api/* to list
     new AddTableOptions();
 
-    //button for when the user is done choosing tables
-    new Submit();
-
     // button when starting to add a table
     new Add();
 
@@ -42,4 +39,7 @@ $(document).ready(function () {
     // button to go from credentials section to api section
     // Set Credentials and URL
     new Credentials();
+
+    //button for when the user is done choosing tables
+    new Submit();
 });
