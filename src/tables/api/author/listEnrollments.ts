@@ -32,6 +32,11 @@ const table: TableName = {
                     dataType: 'datetime',
                 },
                 {
+                    alias: 'Created At',
+                    id: 'created_at',
+                    dataType: 'datetime',
+                },
+                {
                     alias: 'Updated At',
                     id: 'updated_at',
                     dataType: 'datetime',

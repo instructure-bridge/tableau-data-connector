@@ -29,11 +29,6 @@ class Bridge {
         this.apiKey = apiKey;
     }
 
-    // static helper function when other functions just need to use setUrl logic
-    static setUrl(apiCall, apiKey) {
-        return this.setUrl(apiCall, apiKey);
-    }
-
     setUrl(apiCall = this.apiCall, apiKey = this.apiKey): SetURL {
         let url: URL | string;
         let devHeaders: DevHeaders;

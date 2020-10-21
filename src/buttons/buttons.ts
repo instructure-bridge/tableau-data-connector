@@ -155,7 +155,7 @@ class Buttons {
     showErrorMessage(text, timeout) {
         $('#errorText').html(text);
         this.showElement('errorCard', true);
-        setTimeout(function () {
+        setTimeout(() => {
             this.showElement('errorCard', false);
             $('#errorText').html('');
         }, timeout * 1000);
@@ -239,14 +239,14 @@ class Buttons {
     }
 
     getRequiredParameterData(apiCall, tableId, apiKey, oldParam) {
-        const urlObj = Bridge.setUrl(apiCall, apiKey);
+        const urlObj = new Bridge(apiCall, apiKey).setUrl();
 
         Axios({
             method: 'get',
             url: urlObj.apiCall,
             headers: urlObj.headers,
         })
-            .then(function (response) {
+            .then((response) => {
                 const result = response.data;
                 const tableInfo = tables[tableId];
                 const data = result[tableInfo['requiredParameter']['data']];
@@ -273,7 +273,7 @@ class Buttons {
                     this.showLoading(false);
                 }
             })
-            .catch(function (error) {
+            .catch((error) => {
                 console.log(error);
                 this.showLoading(false);
                 this.showErrorMessage(this.errorMessage, 5);

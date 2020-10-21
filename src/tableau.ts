@@ -16,7 +16,7 @@ class Tableau {
         this.myTables = {};
 
         // tableau init
-        this.myConnector.init = function (initCallback) {
+        this.myConnector.init = (initCallback) => {
             tableau.log('tableau web connector initialization');
             tableau.authType = tableau.authTypeEnum.custom;
             initCallback();

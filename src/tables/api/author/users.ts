@@ -17,6 +17,11 @@ const table: TableName = {
                     dataType: 'string',
                 },
                 {
+                    alias: 'HRIS ID',
+                    id: 'hris_id',
+                    dataType: 'string',
+                },
+                {
                     alias: 'First Name',
                     id: 'first_name',
                     dataType: 'string',
@@ -37,8 +42,33 @@ const table: TableName = {
                     dataType: 'string',
                 },
                 {
+                    alias: 'Welcomed to Bridge',
+                    id: 'welcomedAt',
+                    dataType: 'datetime',
+                },
+                {
+                    alias: 'Last Login',
+                    id: 'loggedInAt',
+                    dataType: 'datetime',
+                },
+                {
+                    alias: 'Password is Set',
+                    id: 'passwordIsSet',
+                    dataType: 'bool',
+                },
+                {
                     alias: 'Full Name',
+                    id: 'full_name',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Name',
                     id: 'name',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Avatar URL',
+                    id: 'avatar_url',
                     dataType: 'string',
                 },
                 {
@@ -62,8 +92,18 @@ const table: TableName = {
                     dataType: 'date',
                 },
                 {
+                    alias: 'Is a Manager',
+                    id: 'is_manager',
+                    dataType: 'bool',
+                },
+                {
                     alias: 'Job Title',
                     id: 'job_title',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'User Bio',
+                    id: 'bio',
                     dataType: 'string',
                 },
                 {
@@ -75,6 +115,11 @@ const table: TableName = {
                     alias: 'Department',
                     id: 'department',
                     dataType: 'string',
+                },
+                {
+                    alias: 'Roles',
+                    id: 'roles',
+                    dataType: 'string', //array
                 },
             ],
         },
