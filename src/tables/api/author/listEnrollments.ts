@@ -1,6 +1,6 @@
 import { TableName } from './interface';
 
-let table: TableName = {
+const table: TableName = {
     authorListEnrollments: {
         table: {
             id: 'authorListEnrollments',
