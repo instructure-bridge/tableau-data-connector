@@ -29,11 +29,6 @@ class Bridge {
         this.apiKey = apiKey;
     }
 
-    // static helper function when other functions just need to use setUrl logic
-    static setUrl(apiCall, apiKey) {
-        return this.setUrl(apiCall, apiKey);
-    }
-
     setUrl(apiCall = this.apiCall, apiKey = this.apiKey): SetURL {
         let url: URL | string;
         let devHeaders: DevHeaders;
@@ -97,7 +92,14 @@ class Bridge {
                     const id = column.id;
                     const parentId = column.parent_id;
                     const subId = column.sub_id;
-                    row[id] = data[i][parentId][subId];
+
+                    // Checks to ensure the parentId exists in the response
+                    // Example: see courseTemplates table definition(response may or maynot actually have an author defined)
+                    if (parentId in data[i]) {
+                        row[id] = data[i][parentId][subId];
+                    } else {
+                        row[id] = null;
+                    }
                 } else {
                     const id = column.id;
                     row[id] = data[i][id];
@@ -115,8 +117,6 @@ class Bridge {
             url: urlObj.apiCall,
             headers: urlObj.headers,
         };
-        console.log(apiCall);
-        console.log(req);
         Axios(req)
             .then((response) => {
                 const result = response.data;

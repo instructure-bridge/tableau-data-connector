@@ -11,9 +11,9 @@ import {
 } from './buttons';
 
 //runs these functions on page load
-$(document).ready(function () {
+$(document).ready(() => {
     // Global clear value function
-    window.clearValue = function (id) {
+    window.clearValue = (id) => {
         $(`#${id}`).val('');
     };
 

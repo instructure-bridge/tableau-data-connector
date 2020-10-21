@@ -1,6 +1,6 @@
 import { TableName } from './interface';
 
-let table: TableName = {
+const table: TableName = {
     authorListEnrollments: {
         table: {
             id: 'authorListEnrollments',
@@ -29,6 +29,11 @@ let table: TableName = {
                 {
                     alias: 'Completed At',
                     id: 'completed_at',
+                    dataType: 'datetime',
+                },
+                {
+                    alias: 'Created At',
+                    id: 'created_at',
                     dataType: 'datetime',
                 },
                 {

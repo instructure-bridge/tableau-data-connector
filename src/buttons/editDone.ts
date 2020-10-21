@@ -82,11 +82,16 @@ class EditDone extends Buttons {
             const children = $('#optionalParameterList').children();
             for (let i = 0; i < children.length; i++) {
                 const parameterInput = $(children[i]);
-                const name = parameterInput.attr('id');
-                //let value = '';
+                let name = parameterInput.attr('id');
                 if (parameterInput.attr('parametertype') == 'options') {
                     const option = $(`#input-${name} option:selected`).val();
                     if (option != 'nosel') {
+                        value = option;
+                    }
+                } else if (parameterInput.attr('parametertype') == 'filters') {
+                    const option = $(`#input-${name} option:selected`).val();
+                    if (option != 'false') {
+                        name = `${name}[]`;
                         value = option;
                     }
                 } else if (parameterInput.attr('parametertype') == 'boolean') {
@@ -101,7 +106,6 @@ class EditDone extends Buttons {
                 }
 
                 if (value != null) {
-                    value = encodeURIComponent(value);
                     parameterList.push({
                         name: name,
                         value: value,
@@ -116,7 +120,7 @@ class EditDone extends Buttons {
                     [parameterSet['name'], parameterSet['value']].join('='),
                 );
             }
-            parameterString = parameterListToJoin.join('&');
+            parameterString = encodeURIComponent(parameterListToJoin.join('&'));
             $(`#${id}`).attr('data-optional', parameterString);
             console.log(parameterString);
         }

@@ -1,6 +1,13 @@
 import { TableName } from './interface';
+// Items with parent_ids are essentially response object definitions...
+// Example author: { name, id, uid }
+import {
+    authorColumn,
+    enrollmentCountsColumn,
+    subAccountColumn,
+} from './courseTemplates/columns/';
 
-let table: TableName = {
+const table: TableName = {
     authorCourseTemplates: {
         table: {
             id: 'authorCourseTemplates',
@@ -19,27 +26,6 @@ let table: TableName = {
                 {
                     alias: 'Course Title',
                     id: 'title',
-                    dataType: 'string',
-                },
-                {
-                    alias: 'Author Name',
-                    id: 'author_name',
-                    parent_id: 'author',
-                    sub_id: 'name',
-                    dataType: 'string',
-                },
-                {
-                    alias: 'Author ID',
-                    id: 'author_id',
-                    parent_id: 'author',
-                    sub_id: 'id',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Author UID',
-                    id: 'author_uid',
-                    parent_id: 'author',
-                    sub_id: 'uid',
                     dataType: 'string',
                 },
                 {
@@ -63,69 +49,6 @@ let table: TableName = {
                     dataType: 'string',
                 },
                 {
-                    alias: 'Enrollment Count - All',
-                    id: 'enrollment-counts_all',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'all',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Required',
-                    id: 'enrollment-counts_required',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'required',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Optional',
-                    id: 'enrollment-counts_optional',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'optional',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Finished',
-                    id: 'enrollment-counts_finished',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'finished',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - In Progress',
-                    id: 'enrollment-counts_in-progress',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'in_progress',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Incomplete',
-                    id: 'enrollment-counts_incomplete',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'incomplete',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Incomplete or Finished',
-                    id: 'enrollment-counts_incomplete-or-finished',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'incomplete_or_finished',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Not Started',
-                    id: 'enrollment-counts_not-started',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'not_started',
-                    dataType: 'int',
-                },
-                {
-                    alias: 'Enrollment Count - Overdue',
-                    id: 'enrollment-counts_overdue',
-                    parent_id: 'enrollment_counts',
-                    sub_id: 'overdue',
-                    dataType: 'int',
-                },
-                {
                     alias: 'Has Been Unpublished',
                     id: 'has_been_unpublished',
                     dataType: 'bool',
@@ -134,6 +57,11 @@ let table: TableName = {
                     alias: 'Is Archived',
                     id: 'is_archived',
                     dataType: 'bool',
+                },
+                {
+                    alias: 'Archived At',
+                    id: 'archived_at',
+                    dataType: 'datetime',
                 },
                 {
                     alias: 'Is Published',
@@ -160,6 +88,109 @@ let table: TableName = {
                     id: 'updated_at',
                     dataType: 'datetime',
                 },
+                {
+                    alias: 'Max Quiz Attempts',
+                    id: 'max_quiz_attempts',
+                    dataType: 'int',
+                },
+                {
+                    alias: 'Continuing Education Credits',
+                    id: 'continuing_education_credits',
+                    dataType: 'int',
+                },
+                {
+                    alias: 'Description of Course',
+                    id: 'description',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Has unpublished changes',
+                    id: 'has_unpublished_changes',
+                    dataType: 'bool',
+                },
+                {
+                    alias: 'Course Type',
+                    id: 'course_type',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Enrollments Count',
+                    id: 'enrollments_count',
+                    dataType: 'int',
+                },
+                {
+                    alias: 'Incomplete Enrollments Count',
+                    id: 'incomplete_enrollments_count',
+                    dataType: 'int',
+                },
+                {
+                    alias: 'Attachments Count',
+                    id: 'attachments_count',
+                    dataType: 'int',
+                },
+                {
+                    alias: 'Third Party Course Id',
+                    id: 'third_party_course_id',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Show Correct Response',
+                    id: 'show_correct_response',
+                    dataType: 'bool',
+                },
+                {
+                    alias: 'Branding Override',
+                    id: 'branding_override',
+                    dataType: 'bool',
+                },
+                {
+                    alias: 'Course Tags',
+                    id: 'tags',
+                    dataType: 'string', // array
+                },
+                {
+                    alias: 'Course Categories',
+                    id: 'categories',
+                    dataType: 'string', // array
+                },
+                {
+                    alias: 'Quizzes Open Book',
+                    id: 'open_book',
+                    dataType: 'bool',
+                },
+                {
+                    alias: 'Has Certificate',
+                    id: 'has_certificate',
+                    dataType: 'bool',
+                },
+                {
+                    alias: 'External Course ID',
+                    id: 'has_certificate',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Due Date Type (Relative, Fixed)',
+                    id: 'due_date_type',
+                    dataType: 'string',
+                },
+                {
+                    alias: 'Date Course is Due(Fixed)',
+                    id: 'default_due_on_date',
+                    dataType: 'datetime',
+                },
+                {
+                    alias: 'Default Days Until Due',
+                    id: 'default_days_until_due',
+                    dataType: 'datetime',
+                },
+                {
+                    alias: 'Course Registration URL',
+                    id: 'enroll_url',
+                    dataType: 'string',
+                },
+                ...authorColumn,
+                ...enrollmentCountsColumn,
+                ...subAccountColumn,
             ],
         },
         path: '/api/author/course_templates',
@@ -196,6 +227,46 @@ let table: TableName = {
                 placeholder: 'search terms',
             },
             {
+                name: 'Filters',
+                parameter: 'filters',
+                type: 'filters',
+                default: 'Default',
+                options: [
+                    {
+                        name: 'My Courses',
+                        value: 'my_courses',
+                    },
+                    {
+                        name: 'Unpublished',
+                        value: 'unpublished',
+                    },
+                    {
+                        name: 'Has Certificate',
+                        value: 'has_certificate',
+                    },
+                    {
+                        name: 'No Enrollments',
+                        value: 'no_enrollments',
+                    },
+                    {
+                        name: 'Bridge Courses',
+                        value: 'bridge',
+                    },
+                    {
+                        name: 'Scorm Courses',
+                        value: 'scorm',
+                    },
+                    {
+                        name: 'Lynda Courses',
+                        value: 'lynda',
+                    },
+                    {
+                        name: 'Opensesame Courses',
+                        value: 'opensesame',
+                    },
+                ],
+            },
+            {
                 name: 'Only Deleted',
                 parameter: 'only_deleted',
                 type: 'boolean',
@@ -204,26 +275,6 @@ let table: TableName = {
                 name: 'Include Deleted',
                 parameter: 'with_deleted',
                 type: 'boolean',
-            },
-            {
-                name: 'Role',
-                parameter: 'role',
-                type: 'options',
-                default: 'Any',
-                options: [
-                    {
-                        name: 'Account Admin',
-                        value: 'account_admin',
-                    },
-                    {
-                        name: 'Admin',
-                        value: 'admin',
-                    },
-                    {
-                        name: 'Author',
-                        value: 'author',
-                    },
-                ],
             },
             {
                 name: 'Updated After',

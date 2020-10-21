@@ -74,7 +74,9 @@ class Buttons {
         $('#edit-section').attr('currentTable', id);
         const api = $(`#${id}`).attr('data-api');
         const requiredParameter = $(`#${id}`).attr('data-require');
-        const optionalParameterString = $(`#${id}`).attr('data-optional');
+        const optionalParameterString = decodeURIComponent(
+            $(`#${id}`).attr('data-optional'),
+        );
 
         if ('parameters' in tables[api]) {
             //if the api call has optional parameters
@@ -86,9 +88,12 @@ class Buttons {
                 );
                 for (const op of optionalParameterArray) {
                     const optionalParameterSplit = op.split('=');
-                    const key = optionalParameterSplit[0];
-                    let value = optionalParameterSplit[1];
-                    value = decodeURIComponent(value);
+                    // Hack.. fix later
+                    const key =
+                        optionalParameterSplit[0] == 'filters[]'
+                            ? 'filters'
+                            : optionalParameterSplit[0];
+                    const value = optionalParameterSplit[1];
                     $(`#input-${key}`).val(value);
                 }
             }
@@ -150,7 +155,7 @@ class Buttons {
     showErrorMessage(text, timeout) {
         $('#errorText').html(text);
         this.showElement('errorCard', true);
-        setTimeout(function () {
+        setTimeout(() => {
             this.showElement('errorCard', false);
             $('#errorText').html('');
         }, timeout * 1000);
@@ -159,7 +164,7 @@ class Buttons {
     addOptionalParameters(api) {
         for (const parameter of tables[api]['parameters']) {
             let html = '';
-            if (parameter['type'] == 'options') {
+            if (['options', 'filters'].includes(parameter['type'])) {
                 const type = parameter['type'];
                 const id = parameter['parameter'];
                 const name = parameter['name'];
@@ -234,14 +239,14 @@ class Buttons {
     }
 
     getRequiredParameterData(apiCall, tableId, apiKey, oldParam) {
-        const urlObj = Bridge.setUrl(apiCall, apiKey);
+        const urlObj = new Bridge(apiCall, apiKey).setUrl();
 
         Axios({
             method: 'get',
             url: urlObj.apiCall,
             headers: urlObj.headers,
         })
-            .then(function (response) {
+            .then((response) => {
                 const result = response.data;
                 const tableInfo = tables[tableId];
                 const data = result[tableInfo['requiredParameter']['data']];
@@ -268,7 +273,7 @@ class Buttons {
                     this.showLoading(false);
                 }
             })
-            .catch(function (error) {
+            .catch((error) => {
                 console.log(error);
                 this.showLoading(false);
                 this.showErrorMessage(this.errorMessage, 5);
