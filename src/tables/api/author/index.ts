@@ -14,7 +14,7 @@ import { tags } from './tags';
 import { tasks } from './tasks';
 import { users } from './users';
 
-let tables: TableName = {
+const tables: TableName = {
     ...courseTemplates,
     ...groups,
     ...listEnrollments,
@@ -28,4 +28,4 @@ let tables: TableName = {
     ...users,
 };
 
-export { tables };
+export { tables, TableName };

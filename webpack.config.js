@@ -2,9 +2,9 @@ const path = require('path');
 const { mergeWithCustomize, merge, unique } = require('webpack-merge');
 
 const configDirs = {
-    srcPath: path.resolve(__dirname, 'src'),
-    distPath: path.resolve(__dirname, 'dist'),
-    confPath: path.resolve(__dirname, 'webpack'),
+    srcPath: path.resolve(__dirname, 'src'), // eslint-disable-line
+    distPath: path.resolve(__dirname, 'dist'), // eslint-disable-line
+    confPath: path.resolve(__dirname, 'webpack'), // eslint-disable-line
 };
 
 const commonConfig = require(configDirs.confPath + '/webpack.common.js')(
@@ -21,7 +21,7 @@ const testConfig = require(configDirs.confPath + '/webpack.test.js')(
 );
 
 module.exports = (target) => {
-    const t = target ? target : process.env.NODE_ENV;
+    const t = target ? target : process.env.NODE_ENV; // eslint-disable-line
     switch (t) {
         case 'development':
             return merge(commonConfig, developmentConfig);
