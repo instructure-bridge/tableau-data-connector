@@ -1,7 +1,7 @@
 import nock from 'nock';
-import { CheckCredentials } from '../../lib/checkCredentials';
+import { Bridge } from '../../api/bridge';
 
-describe('CheckCredentials', function () {
+describe('Bridge', function () {
     afterEach(() => {
         nock.restore();
     });
@@ -13,6 +13,10 @@ describe('CheckCredentials', function () {
         'access-control-allow-origin': 'http://localhost',
         'access-control-allow-headers': 'Accept,Authorization',
     };
+
+    const table = 'test';
+    const myTables = {};
+    const doneCallback = jest.fn();
 
     it('Retries on error', async () => {
         jest.autoMockOff();
@@ -32,7 +36,13 @@ describe('CheckCredentials', function () {
             .once()
             .reply(200, 'Ok');
 
-        await new CheckCredentials(testUrl, apiKey).performApiCall();
+        await new Bridge(testUrl, apiKey).performApiCall(
+            table,
+            doneCallback,
+            testUrl,
+            myTables,
+            apiKey,
+        );
 
         // nock.isDone() will only return true if stub the stub was called, in this way, we can verify
         // the retry logic first hit the error response, retried, and was successful
@@ -40,5 +50,5 @@ describe('CheckCredentials', function () {
         expect(error.isDone()).toBeTruthy;
         expect(success.isDone()).toBeTruthy;
     });
-    // TODO: Add tests around Axios error / response logic
+    // TODO: Add more tests
 });
