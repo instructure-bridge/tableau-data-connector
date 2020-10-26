@@ -1,7 +1,7 @@
 /* Allow the use of `any` type until tableauwdc adds types, or we add our own*/
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { isJsonString } from './utils';
+import { isJsonString } from './lib/utils';
 import { tables } from './tables/api/author';
 import { Bridge } from './api/bridge';
 

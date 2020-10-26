@@ -1,4 +1,4 @@
-import { isJsonString } from '../utils';
+import { isJsonString } from '../../lib/utils';
 
 describe('utils', function () {
     describe('isJsonString', function () {

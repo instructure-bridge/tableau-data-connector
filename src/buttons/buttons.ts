@@ -1,17 +1,17 @@
-import $ from 'jquery/dist/jquery.slim';
-import { Bridge } from '../api/bridge';
 import Axios from 'axios';
+import { Bridge } from '../api/bridge';
+import { ErrorToast } from '../lib/errorToast';
 import { tables, TableName } from '../tables/api/author';
 
 // Class meant to be inherited to add functions to buttons
 class Buttons {
     tables: TableName;
-    errorMessage: string;
+    defaultErrorMessage: string;
 
     constructor() {
         this.tables = tables;
-        this.errorMessage =
-            'Could not fetch course data. Check that the url and api key are correct.';
+        this.defaultErrorMessage =
+            'An error has occured. Check that the url and api key are correct.';
     }
 
     // function for showing and hiding elements
@@ -117,7 +117,7 @@ class Buttons {
                 );
             } catch (error) {
                 console.log(error);
-                this.showErrorMessage(this.errorMessage, 5);
+                this.showErrorMessage(this.defaultErrorMessage);
                 this.showLoading(false);
             }
         } else {
@@ -152,13 +152,8 @@ class Buttons {
         }
     }
 
-    showErrorMessage(text, timeout) {
-        $('#errorText').html(text);
-        this.showElement('errorCard', true);
-        setTimeout(() => {
-            this.showElement('errorCard', false);
-            $('#errorText').html('');
-        }, timeout * 1000);
+    showErrorMessage(errorMessage: any, errorType = 'Error', delay = 800) {
+        new ErrorToast(errorMessage, errorType, delay).createToast();
     }
 
     addOptionalParameters(api) {
@@ -276,7 +271,7 @@ class Buttons {
             .catch((error) => {
                 console.log(error);
                 this.showLoading(false);
-                this.showErrorMessage(this.errorMessage, 5);
+                this.showErrorMessage(this.defaultErrorMessage);
             });
     }
 }

@@ -15,6 +15,7 @@ module.exports = {
         '<rootDir>/webpack/',
     ],
     setupFiles: [
-      '<rootDir>/src/__tests__/setup/tableauwdc-2.3.latest.js'
+      '<rootDir>/src/__tests__/setup/tableauwdc-2.3.latest.js',
+      '<rootDir>/src/__tests__/setup/jquery-setup.js',
     ],
 };
