@@ -1,3 +1,4 @@
+// Config based on https://jestjs.io/docs/en/getting-started#using-babel
 module.exports = {
     presets: [
         [

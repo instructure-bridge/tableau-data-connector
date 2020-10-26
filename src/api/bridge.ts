@@ -15,7 +15,7 @@ interface DevHeaders {
 
 interface Headers extends DefaultHeaders, DevHeaders {}
 
-interface SetURL {
+export interface SetURL {
     apiCall: any; // TODO this should be URL, but causes some type problems with Axios
     headers: Headers;
 }

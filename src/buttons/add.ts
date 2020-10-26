@@ -48,7 +48,7 @@ class Add extends Buttons {
                 );
             } catch (error) {
                 console.log(error);
-                this.showErrorMessage(this.errorMessage, 5);
+                this.showErrorMessage(this.defaultErrorMessage);
                 this.showLoading(false);
             }
         } else {

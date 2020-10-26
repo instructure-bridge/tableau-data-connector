@@ -1,11 +1,8 @@
-.titleColumn {
-    display: inline-flex;
+#toastsContainer {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  width: 300px;
+  z-index: 1;
 }
 
-.title {
-    margin: auto 0;
-}
-
-.errorText {
-    color: red;
-}

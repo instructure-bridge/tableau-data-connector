@@ -1255,9 +1255,9 @@
     "@types/node" "*"
 
 "@types/bootstrap@^4.5.0":
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/@types/bootstrap/-/bootstrap-4.5.0.tgz#07a079d3ee2b1646491082d6162048d7bf4610b5"
-  integrity sha512-AWu7D+Cduyic75YptSRiXuCIy1c3SsmYk/9ixS68Ft2eAgg2wRj5U2M+7PK5zpakk4gTgfrWHeGxJqkSjttwyQ==
+  version "4.5.1"
+  resolved "https://registry.yarnpkg.com/@types/bootstrap/-/bootstrap-4.5.1.tgz#9e11a2ccc79e5d6c116239571629db859ed82a9d"
+  integrity sha512-5iAWnZnqHucloYQFlozKUTPw0+fLfKo8d4flGCiE1B1w91z/91UIqMDht/31RQJIwx0+u5SL4CJCbs79Z15M+A==
   dependencies:
     "@types/jquery" "*"
     popper.js "^1.14.1"
@@ -1456,6 +1456,13 @@
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
+
+"@types/popper.js@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@types/popper.js/-/popper.js-1.11.0.tgz#217a9231953ded26b15a6264f9942e963a8f6e69"
+  integrity sha512-1SDEDA6VacGAqDOmwbMcJD39bg0sHbM8y6LHOV3CMxyDBRrwTodRyIIj5f4eR/nlgpeyPoG1fKXqbkRmg+5yRg==
+  dependencies:
+    popper.js "*"
 
 "@types/prettier@^2.0.0", "@types/prettier@^2.1.1":
   version "2.1.1"
@@ -2313,6 +2320,11 @@ boom@2.x.x, boom@^2.5.x:
   integrity sha1-OciRjO/1eZ+D+UkqhI9iWt0Mdm8=
   dependencies:
     hoek "2.x.x"
+
+bootstrap@^4.5.3:
+  version "4.5.3"
+  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.5.3.tgz#c6a72b355aaf323920be800246a6e4ef30997fe6"
+  integrity sha512-o9ppKQioXGqhw8Z7mah6KdTYpNQY//tipnkxppWhPbiSWdD+1raYsnhwEZjkTHYbGee4cVQ0Rx65EhOY/HNLcQ==
 
 brace-expansion@^1.1.7:
   version "1.1.11"
@@ -7103,7 +7115,7 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-popper.js@^1.14.1:
+popper.js@*, popper.js@^1.14.1, popper.js@^1.16.1:
   version "1.16.1"
   resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.16.1.tgz#2a223cb3dc7b6213d740e40372be40de43e65b1b"
   integrity sha512-Wb4p1J4zyFTbM+u6WuO4XstYx4Ky9Cewe4DWrel7B0w6VVICvPwdOpotjzcf6eD8TsckVnIMNONQyPIUFOUbCQ==
