@@ -1,0 +1,11 @@
+#toastsContainer {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  width: 300px;
+  z-index: 1;
+}
+
+
+
+/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8vc3JjL21haW4uY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0Usa0JBQWtCO0VBQ2xCLE1BQU07RUFDTixXQUFXO0VBQ1gsWUFBWTtFQUNaLFVBQVU7QUFDWiIsImZpbGUiOiJzdHlsZXMuY3NzIiwic291cmNlc0NvbnRlbnQiOlsiI3RvYXN0c0NvbnRhaW5lciB7XG4gIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgdG9wOiAwO1xuICByaWdodDogMTBweDtcbiAgd2lkdGg6IDMwMHB4O1xuICB6LWluZGV4OiAxO1xufVxuXG4iXSwic291cmNlUm9vdCI6IiJ9*/
