@@ -1,5 +1,6 @@
 import Axios from 'axios';
-import { AxiosRequestConfig } from 'axios';
+import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axiosRetry from 'axios-retry';
 
 interface DefaultHeaders {
     Authorization: string;
@@ -111,6 +112,8 @@ class Bridge {
     }
 
     performApiCall(table, doneCallback, apiCall, myTables, apiKey?: string) {
+        // Retries 3 times by default for network errors and 5xx error's
+        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
         const urlObj: SetURL = this.setUrl(apiCall, apiKey);
         const req: AxiosRequestConfig = {
             method: 'get',
@@ -118,7 +121,7 @@ class Bridge {
             headers: urlObj.headers,
         };
         Axios(req)
-            .then((response) => {
+            .then((response: AxiosResponse) => {
                 const result = response.data;
                 this.addRow(table, myTables, result);
                 if ('next' in result.meta) {
@@ -132,7 +135,7 @@ class Bridge {
                     doneCallback();
                 }
             })
-            .catch((error) => {
+            .catch((error: AxiosError) => {
                 console.log(error);
                 doneCallback();
                 //TODO: try to find some sort of way to report an error since the browser is already closed

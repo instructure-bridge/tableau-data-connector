@@ -1,5 +1,6 @@
 import Axios from 'axios';
-import { AxiosRequestConfig } from 'axios';
+import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axiosRetry from 'axios-retry';
 import { ErrorToast } from './errorToast';
 import { Bridge, SetURL } from '../api/bridge';
 
@@ -12,6 +13,9 @@ class CheckCredentials extends Bridge {
     }
 
     performApiCall() {
+        // Retries 3 times by default for network errors and 5xx error's
+        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
+
         if (!this.apiCall || !this.apiKey) {
             this.error('Please enter a value for URL and Key');
             return;
@@ -25,14 +29,16 @@ class CheckCredentials extends Bridge {
             url: urlObj.apiCall + 'api/author/users?id=1',
             headers: urlObj.headers,
         };
+
         Axios(req)
-            .then((response) => {
-                const data = response?.data?.toString()?.toLowerCase() || '';
+            .then((response: AxiosResponse) => {
+                const data: string =
+                    response?.data?.toString()?.toLowerCase() || '';
                 if (data.includes('account not found')) {
                     throw new Error('account not found');
                 }
             })
-            .catch((error) => {
+            .catch((error: AxiosError) => {
                 if (error?.message?.includes('account not found')) {
                     this.error('Account Not Found: Check your URL');
                 } else if (error?.response?.status == 401) {

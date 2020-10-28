@@ -1,4 +1,6 @@
 import Axios from 'axios';
+import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import axiosRetry from 'axios-retry';
 import { Bridge } from '../api/bridge';
 import { ErrorToast } from '../lib/errorToast';
 import { tables, TableName } from '../tables/api/author';
@@ -236,12 +238,16 @@ class Buttons {
     getRequiredParameterData(apiCall, tableId, apiKey, oldParam) {
         const urlObj = new Bridge(apiCall, apiKey).setUrl();
 
-        Axios({
+        // Retries 3 times by default for network errors and 5xx error's
+        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
+        const req: AxiosRequestConfig = {
             method: 'get',
             url: urlObj.apiCall,
             headers: urlObj.headers,
-        })
-            .then((response) => {
+        };
+
+        Axios(req)
+            .then((response: AxiosResponse) => {
                 const result = response.data;
                 const tableInfo = tables[tableId];
                 const data = result[tableInfo['requiredParameter']['data']];
@@ -268,7 +274,7 @@ class Buttons {
                     this.showLoading(false);
                 }
             })
-            .catch((error) => {
+            .catch((error: AxiosError) => {
                 console.log(error);
                 this.showLoading(false);
                 this.showErrorMessage(this.defaultErrorMessage);
