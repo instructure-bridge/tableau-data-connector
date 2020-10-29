@@ -136,12 +136,14 @@ const table: TableName = {
                 {
                     alias: 'Course Tags',
                     id: 'tags',
-                    dataType: 'string', // array
+                    dataType: 'string',
+                    originalType: 'array',
                 },
                 {
                     alias: 'Course Categories',
                     id: 'categories',
-                    dataType: 'string', // array
+                    dataType: 'string',
+                    originalType: 'array',
                 },
                 {
                     alias: 'Quizzes Open Book',

@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
+import { convertObjectValues } from '../lib/utils';
 
 interface DefaultHeaders {
     Authorization: string;
@@ -71,6 +72,11 @@ class Bridge {
         for (let i = 0, len = data.length; i < len; i++) {
             const row = {};
             for (const column of tableInfo.table.columns) {
+                if ('originalType' in column) {
+                    // Tableau does not allow array types, this function converts array type to strings
+                    convertObjectValues(data[i]);
+                }
+
                 if ('linkedSource' in column) {
                     //for data in linked sources
                     const tableauId = column.id;
