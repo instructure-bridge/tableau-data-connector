@@ -42,5 +42,6 @@ $(document).ready(() => {
     new Credentials();
 
     //button for when the user is done choosing tables
+    //This is also reponsible for creating the tableau wdc initialization
     new Submit();
 });

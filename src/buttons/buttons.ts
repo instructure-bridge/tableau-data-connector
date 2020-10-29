@@ -3,9 +3,11 @@ import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
 import { Bridge } from '../api/bridge';
 import { ErrorToast } from '../lib/errorToast';
+import { showElement, showLoading, switchPage } from '../lib/htmlUtils';
 import { tables, TableName } from '../tables/api/author';
 
-// Class meant to be inherited to add functions to buttons
+// Class is inherited by most of the other buttons to add shared functions
+// Some of which have been extracted out to ../lib/htmlUtils.
 class Buttons {
     tables: TableName;
     defaultErrorMessage: string;
@@ -17,32 +19,13 @@ class Buttons {
     }
 
     // function for showing and hiding elements
-    showElement(id, isShow) {
-        if (isShow) {
-            $(`#${id}`).css('display', '');
-        } else {
-            $(`#${id}`).css('display', 'none');
-        }
-    }
+    showElement = showElement;
 
     // function for switching between pages
-    switchPage(start, end) {
-        this.showElement(start, false);
-        this.showElement(end, true);
-    }
+    switchPage = switchPage;
 
     //function for showing the loading icon for the required parameter fethcing
-    showLoading(isLoading) {
-        if (isLoading) {
-            $('#addButton').prop('disabled', true);
-            $('#addButton').html(
-                '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span><span class="sr-only">Loading...</span>',
-            );
-        } else {
-            $('#addButton').prop('disabled', false);
-            $('#addButton').html('Add');
-        }
-    }
+    showLoading = showLoading;
 
     //function for clearing the required parameter selector options
     clearRequiredParameterOptions() {
@@ -161,9 +144,10 @@ class Buttons {
     addOptionalParameters(api) {
         for (const parameter of tables[api]['parameters']) {
             let html = '';
+            let id;
             if (['options', 'filters'].includes(parameter['type'])) {
                 const type = parameter['type'];
-                const id = parameter['parameter'];
+                id = parameter['parameter'];
                 const name = parameter['name'];
                 const defaultOption = parameter['default'];
                 const options = [
@@ -185,7 +169,7 @@ class Buttons {
                 html = options.join('\n');
             } else if (parameter['type'] == 'boolean') {
                 const type = parameter['type'];
-                const id = parameter['parameter'];
+                id = parameter['parameter'];
                 const name = parameter['name'];
                 html = [
                     `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
@@ -201,7 +185,7 @@ class Buttons {
                 ].join('\n');
             } else if (parameter['type'] == 'date') {
                 const type = parameter['type'];
-                const id = parameter['parameter'];
+                id = parameter['parameter'];
                 const name = parameter['name'];
                 html = [
                     `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
@@ -218,7 +202,7 @@ class Buttons {
                 ].join('\n');
             } else if (parameter['type'] == 'string') {
                 const type = parameter['type'];
-                const id = parameter['parameter'];
+                id = parameter['parameter'];
                 const name = parameter['name'];
                 const placeholder = parameter['placeholder'];
                 html = [
@@ -231,7 +215,13 @@ class Buttons {
                     `</div>`,
                 ].join('\n');
             }
-            $('#optionalParameterList').append(html);
+
+            // Since this method can be called multiple times.. we don't want to re-append things
+            if ($('#optionalParameterList').html().includes(id)) {
+                continue;
+            } else {
+                $('#optionalParameterList').append(html);
+            }
         }
     }
 

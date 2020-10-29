@@ -1,3 +1,4 @@
+import { updateApiList } from '../lib/htmlUtils';
 import { Buttons } from './buttons';
 
 class EditDone extends Buttons {
@@ -14,7 +15,7 @@ class EditDone extends Buttons {
             this.api = $('#apiSelector').val();
             this.title = $('#tableName').val();
 
-            this.apiList(this.id, this.api, this.title, this.ulLength);
+            updateApiList(this.id, this.api, this.title, this.ulLength);
             this.requiredParameter(this.id, this.api, this.tables);
             this.parameters(this.id, this.api, this.tables);
 
@@ -27,42 +28,6 @@ class EditDone extends Buttons {
                 $('#optionalParameterButton').click();
             }
         });
-    }
-
-    apiList(id, api, title, ulLength): void {
-        // check if id exists to see if this is an edit or an add
-        if (id < ulLength) {
-            // editing table entry
-            $('#' + id + ' .title').text(title);
-        } else {
-            // adding table entry
-            // remove empty list message when adding first entry
-            if (ulLength <= 0) {
-                this.showElement('emptyApiListMessage', false);
-            }
-
-            const html: string = this.buildHtml(id, api, title);
-            $('#apiList').append(html);
-        }
-    }
-
-    // Adds the Edit and Delete Buttons for each table item
-    buildHtml(id, api, title): string {
-        return [
-            `<li data-api="${api}" class="list-group-item" id="${id}">`,
-            `<div class="row">`,
-            `<div class="col titleColumn">`,
-            `<div class="title">${title}</div>`,
-            `</div>`,
-            `<div class="col-xs-auto">`,
-            `<span>`,
-            `<button class="btn btn-light mx-1" id="editList" type="button">Edit</button>`,
-            `<button class="btn btn-light mx-1" id="deleteList" type="button">Delete</button>`,
-            `</span>`,
-            `</div>`,
-            `</div>`,
-            `</li>`,
-        ].join('\n');
     }
 
     requiredParameter(id, api, tables): any {
@@ -108,7 +73,7 @@ class EditDone extends Buttons {
                 if (value != null) {
                     parameterList.push({
                         name: name,
-                        value: value,
+                        value: encodeURIComponent(value),
                     });
                 }
             }
@@ -120,7 +85,7 @@ class EditDone extends Buttons {
                     [parameterSet['name'], parameterSet['value']].join('='),
                 );
             }
-            parameterString = encodeURIComponent(parameterListToJoin.join('&'));
+            parameterString = parameterListToJoin.join('&');
             $(`#${id}`).attr('data-optional', parameterString);
             console.log(parameterString);
         }

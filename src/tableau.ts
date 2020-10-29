@@ -1,6 +1,7 @@
 /* Allow the use of `any` type until tableauwdc adds types, or we add our own*/
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { updateApiList } from './lib/htmlUtils';
 import { isJsonString } from './lib/utils';
 import { tables } from './tables/api/author';
 import { Bridge } from './api/bridge';
@@ -20,6 +21,18 @@ class Tableau {
             tableau.log('tableau web connector initialization');
             tableau.authType = tableau.authTypeEnum.custom;
             initCallback();
+
+            if (
+                tableau.phase == tableau.phaseEnum.authPhase ||
+                tableau.phase == tableau.phaseEnum.interactivePhase
+            ) {
+                if (tableau.connectionData) {
+                    this.populateStoredValues(tableau.connectionData);
+                    if (tableau.password.length == 0) {
+                        tableau.abortForAuth();
+                    }
+                }
+            }
         };
 
         // tableau get schema
@@ -63,6 +76,12 @@ class Tableau {
         //tableau get data
         this.myConnector.getData = (table, doneCallback) => {
             tableau.log('getData');
+
+            if (tableau.password.length == 0) {
+                this.populateStoredValues(tableau.connectionData);
+                tableau.abortForAuth();
+            }
+
             const data = JSON.parse(tableau.connectionData);
             const tableid = table.tableInfo.id;
             const path = this.myTables[tableid].path;
@@ -112,6 +131,31 @@ class Tableau {
 
     tableauSubmit(): any {
         tableau.submit();
+    }
+
+    // If the user has previously setup the web connector connectionData should contain those values
+    // This function makes sure the UI gets re-populated with the data.
+    populateStoredValues(connectionData) {
+        if (connectionData) {
+            const data = JSON.parse(connectionData);
+            const tables: Array<any> = data.tables;
+            // Set url value if available
+            $('#url').val(data.url);
+            // Set the password if available(user would be in the same session)
+            if (tableau.password.length > 0) {
+                $('#apiKey').val(tableau.password);
+            }
+
+            tables.forEach((element, i) => {
+                const id = i;
+                const ulLength = $('#apiList li').length;
+                const api = element.apiCall;
+                const title = element.title;
+                updateApiList(id, api, title, ulLength);
+                $(`#${id}`).attr('data-require', element.requiredParameter);
+                $(`#${id}`).attr('data-optional', element.optionalParameters);
+            });
+        }
     }
 }
 

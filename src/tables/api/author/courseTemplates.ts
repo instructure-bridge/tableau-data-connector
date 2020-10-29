@@ -34,19 +34,9 @@ const table: TableName = {
                     dataType: 'datetime',
                 },
                 {
-                    alias: 'Default Days Until Due',
-                    id: 'default_days_until_due',
-                    dataType: 'int',
-                },
-                {
                     alias: 'Default Due On Date',
                     id: 'default_due_on_date',
                     dataType: 'datetime',
-                },
-                {
-                    alias: 'Due Date Type',
-                    id: 'due_date_type',
-                    dataType: 'string',
                 },
                 {
                     alias: 'Has Been Unpublished',
@@ -146,12 +136,14 @@ const table: TableName = {
                 {
                     alias: 'Course Tags',
                     id: 'tags',
-                    dataType: 'string', // array
+                    dataType: 'string',
+                    originalType: 'array',
                 },
                 {
                     alias: 'Course Categories',
                     id: 'categories',
-                    dataType: 'string', // array
+                    dataType: 'string',
+                    originalType: 'array',
                 },
                 {
                     alias: 'Quizzes Open Book',
@@ -159,24 +151,14 @@ const table: TableName = {
                     dataType: 'bool',
                 },
                 {
-                    alias: 'Has Certificate',
-                    id: 'has_certificate',
-                    dataType: 'bool',
-                },
-                {
                     alias: 'External Course ID',
-                    id: 'has_certificate',
+                    id: 'external_course_id',
                     dataType: 'string',
                 },
                 {
                     alias: 'Due Date Type (Relative, Fixed)',
                     id: 'due_date_type',
                     dataType: 'string',
-                },
-                {
-                    alias: 'Date Course is Due(Fixed)',
-                    id: 'default_due_on_date',
-                    dataType: 'datetime',
                 },
                 {
                     alias: 'Default Days Until Due',
