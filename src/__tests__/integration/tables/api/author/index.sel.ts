@@ -1,8 +1,8 @@
 import 'chromedriver';
 import chrome from 'selenium-webdriver/chrome';
-import { Builder, By, Key, until } from 'selenium-webdriver';
+import { Builder, By } from 'selenium-webdriver';
 
-import { delay, screen } from '../../../helpers';
+import { screen, setCredentials } from '../../../helpers';
 
 describe('tables', function () {
     let driver: chrome.Driver;
@@ -26,6 +26,8 @@ describe('tables', function () {
         const newTableName = 'New Table Name Test 1234';
 
         await driver.get('http://localhost:8888');
+        await setCredentials(driver, API_URL, API_KEY);
+
         await driver.findElement(By.id('credentialsButton')).click();
         await driver.findElement(By.id('apiSelector')).click();
         await driver
@@ -71,6 +73,7 @@ describe('tables', function () {
         await driver.get('http://localhost:8888');
         const tableToUse = 'authorUser';
         const numTables = 20;
+        await setCredentials(driver, API_URL, API_KEY);
 
         await driver.findElement(By.id('credentialsButton')).click();
         await driver.findElement(By.id('apiSelector')).click();

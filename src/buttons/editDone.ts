@@ -1,4 +1,4 @@
-import { updateApiList } from '../lib/htmlUtils';
+import { disableElement, updateApiList } from '../lib/htmlUtils';
 import { Buttons } from './buttons';
 
 class EditDone extends Buttons {
@@ -9,68 +9,178 @@ class EditDone extends Buttons {
 
     constructor() {
         super();
+        $('#requiredParameterList').on(
+            'click',
+            '#requiredCheckbox',
+            (event: any) => {
+                const requiredParameter =
+                    event.target.parentElement.previousElementSibling
+                        .lastElementChild;
+                const id = requiredParameter.id;
+
+                if (
+                    event.target &&
+                    event.target.parentElement.previousElementSibling
+                        .lastElementChild.id == id
+                ) {
+                    if (event.target.checked) {
+                        $(`#${id}`).val('all');
+                        disableElement(requiredParameter.id, true);
+                    } else {
+                        $(`#${id}`).val(null);
+                        disableElement(requiredParameter.id, false);
+                    }
+                }
+            },
+        );
+
         $('#editDoneButton').on('click', () => {
             this.id = $('#edit-section').attr('currentTable');
             this.ulLength = $('#apiList li').length;
-            this.api = $('#apiSelector').val();
+            this.api =
+                $(`#${this.id}`).attr('data-api') || $('#apiSelector').val();
             this.title = $('#tableName').val();
 
             updateApiList(this.id, this.api, this.title, this.ulLength);
-            this.requiredParameter(this.id, this.api, this.tables);
+            this.requiredParameters(this.id, this.api, this.tables);
             this.parameters(this.id, this.api, this.tables);
 
-            // switch back to api section
-            this.switchPage('edit-section', 'api-section');
-            this.showElement('optionalParameterSection', false);
-            $('#optionalParameterSelector').empty();
-            $('#optionalParameterList').html('');
-            if ($('#optionalParameterList').hasClass('show')) {
-                $('#optionalParameterButton').click();
+            const required = this.required(this.api, this.tables);
+            const optional = this.optional(this.api, this.tables);
+
+            if (required && optional) {
+                this.requiredParameterActions();
+                this.optionalParameterActions();
+            } else if (required && !optional) {
+                this.requiredParameterActions();
+            } else if (!required && optional) {
+                this.optionalParameterActions();
+                this.switchPage('edit-section', 'api-section');
             }
         });
     }
 
-    requiredParameter(id, api, tables): any {
-        let requiredParameter: any;
+    required(api, tables): boolean {
+        return 'requiredParameters' in tables[api];
+    }
 
-        if ('requiredParameter' in tables[api]) {
-            //get required parameter if necessary
-            requiredParameter = $('#requiredParameterSelector').val();
-            $(`#${id}`).attr('data-require', requiredParameter);
+    optional(api, tables): boolean {
+        return 'parameters' in tables[api];
+    }
+
+    requiredParameterActions() {
+        const form = <any>$('#requiredForm');
+        if (form[0].checkValidity()) {
+            this.showElement('requiredParameterSection', false);
+            $('#requiredParameterSelector').empty();
+            $('#requiredParameterList').html('');
+            if ($('#requiredParameterList').hasClass('show')) {
+                $('#requiredParameterButton').click();
+            }
+            this.switchPage('edit-section', 'api-section');
+        } else {
+            form[0].reportValidity();
         }
     }
 
-    parameters(id, api, tables): any {
-        let value: any;
-        if ('parameters' in tables[api]) {
+    optionalParameterActions() {
+        this.showElement('optionalParameterSection', false);
+        $('#optionalParameterSelector').empty();
+        $('#optionalParameterList').html('');
+        if ($('#optionalParameterList').hasClass('show')) {
+            $('#optionalParameterButton').click();
+        }
+    }
+
+    requiredParameters(id, api, tables): any {
+        if (this.required(api, tables)) {
             const parameterList = [];
-            const children = $('#optionalParameterList').children();
+            const children = $('#requiredParameterList').children();
             for (let i = 0; i < children.length; i++) {
                 const parameterInput = $(children[i]);
+                let value: any;
                 let name = parameterInput.attr('id');
-                if (parameterInput.attr('parametertype') == 'options') {
+                if (parameterInput.attr('parametertype') === 'options') {
                     const option = $(`#input-${name} option:selected`).val();
                     if (option != 'nosel') {
                         value = option;
                     }
-                } else if (parameterInput.attr('parametertype') == 'filters') {
+                } else if (parameterInput.attr('parametertype') === 'filters') {
                     const option = $(`#input-${name} option:selected`).val();
-                    if (option != 'false') {
+                    if (option != 'nosel') {
                         name = `${name}[]`;
                         value = option;
                     }
-                } else if (parameterInput.attr('parametertype') == 'boolean') {
+                } else if (parameterInput.attr('parametertype') === 'boolean') {
                     const option = $(`#input-${name} option:selected`).val();
                     if (option != 'false') {
                         value = option;
                     }
-                } else if (parameterInput.attr('parametertype') == 'string') {
+                } else if (parameterInput.attr('parametertype') === 'string') {
                     value = $(`#input-${name}`).val();
-                } else if (parameterInput.attr('parametertype') == 'date') {
+                } else if (parameterInput.attr('parametertype') === 'date') {
                     value = $(`#input-${name}`).val();
+                } else {
+                    name = null;
+                    value = null;
                 }
 
-                if (value != null) {
+                if (value && name) {
+                    parameterList.push({
+                        name: name,
+                        value: encodeURIComponent(value),
+                    });
+                }
+            }
+
+            this.showElement('requiredParameterSection', true);
+            let parameterString = '';
+            const parameterListToJoin = [];
+            for (const parameterSet of parameterList) {
+                parameterListToJoin.push(
+                    [parameterSet['name'], parameterSet['value']].join('='),
+                );
+            }
+            parameterString = parameterListToJoin.join('&');
+            $(`#${id}`).attr('data-require', parameterString);
+            console.log(parameterString);
+        }
+    }
+
+    parameters(id, api, tables): any {
+        if (this.optional(api, tables)) {
+            const parameterList = [];
+            const children = $('#optionalParameterList').children();
+            for (let i = 0; i < children.length; i++) {
+                const parameterInput = $(children[i]);
+                let value: any;
+                let name = parameterInput.attr('id');
+
+                if (parameterInput.attr('parametertype') === 'options') {
+                    const option = $(`#input-${name} option:selected`).val();
+                    if (option != 'nosel') {
+                        value = option;
+                    }
+                } else if (parameterInput.attr('parametertype') === 'filters') {
+                    const option = $(`#input-${name} option:selected`).val();
+                    if (option != 'nosel') {
+                        name = `${name}[]`;
+                        value = option;
+                    }
+                } else if (parameterInput.attr('parametertype') === 'boolean') {
+                    const option = $(`#input-${name} option:selected`).val();
+                    if (option != 'false') {
+                        value = option;
+                    }
+                } else if (parameterInput.attr('parametertype') === 'string') {
+                    value = $(`#input-${name}`).val();
+                } else if (parameterInput.attr('parametertype') === 'date') {
+                    value = $(`#input-${name}`).val();
+                } else {
+                    name = null;
+                    value = null;
+                }
+                if (value && name) {
                     parameterList.push({
                         name: name,
                         value: encodeURIComponent(value),

@@ -32,13 +32,13 @@ const table: TableName = {
         },
         path: '/api/author/tags/*/taggings',
         data: 'taggings',
-        requiredParameter: {
-            title: 'Tag',
-            path: '/api/author/tags',
-            data: 'tags',
-            nameCol: 'name',
-            valCol: 'id',
-        },
+        //requiredParameter: {
+        //title: 'Tag',
+        //path: '/api/author/tags',
+        //data: 'tags',
+        //nameCol: 'name',
+        //valCol: 'id',
+        //},
     },
 };
 

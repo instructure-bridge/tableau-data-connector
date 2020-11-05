@@ -13,14 +13,6 @@ export interface ParameterOption {
     value?: string;
 }
 
-export interface RequiredParameter {
-    title: string;
-    path: string;
-    data: string;
-    nameCol: string;
-    valCol: string;
-}
-
 export interface Parameter {
     name: string;
     parameter: string;
@@ -30,9 +22,15 @@ export interface Parameter {
     options?: Array<ParameterOption>;
 }
 
+export interface RequiredParameter extends Parameter {
+    path?: string;
+    valCol: string;
+}
+
 export interface TableDefinition {
     id: string;
     alias: string;
+    incrementColumnId?: string;
     columns: Array<Column>;
 }
 
@@ -40,7 +38,7 @@ export interface Table {
     table: TableDefinition;
     path: string;
     data: string;
-    requiredParameter?: RequiredParameter;
+    requiredParameters?: Array<RequiredParameter>;
     parameters?: Array<Parameter>;
 }
 

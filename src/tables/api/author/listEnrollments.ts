@@ -4,7 +4,7 @@ const table: TableName = {
     authorListEnrollments: {
         table: {
             id: 'authorListEnrollments',
-            alias: 'Specific Course Enrollments',
+            alias: 'List Course Enrollments',
             columns: [
                 {
                     alias: 'Enrollment ID',
@@ -109,13 +109,16 @@ const table: TableName = {
         },
         path: '/api/author/course_templates/*/enrollments',
         data: 'enrollments',
-        requiredParameter: {
-            title: 'Course',
-            path: '/api/author/course_templates',
-            data: 'course_templates',
-            nameCol: 'title',
-            valCol: 'id',
-        },
+        requiredParameters: [
+            {
+                name: 'Course ID',
+                parameter: 'course_id',
+                path: '/api/author/course_templates/titles',
+                valCol: 'course_templates',
+                type: 'string',
+                placeholder: 'course id',
+            },
+        ],
     },
 };
 

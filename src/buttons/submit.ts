@@ -1,14 +1,15 @@
 import { Buttons } from './buttons';
-import { Tableau } from '../tableau';
+import { tableauInstance } from '../tableau';
 
 class Submit extends Buttons {
     tableau: any;
 
     constructor() {
         super();
-        this.tableau = new Tableau();
+        this.tableau = tableauInstance;
 
         $('#submitButton').on('click', () => {
+            let schema;
             const ul = $('#apiList')[0];
             const items = ul.getElementsByTagName('li');
             const apiCalls = [];
@@ -19,7 +20,7 @@ class Submit extends Buttons {
                     title: item.getElementsByClassName('title')[0].innerText,
                 };
                 if (item.hasAttribute('data-require')) {
-                    newTable['requiredParameter'] = item.getAttribute(
+                    newTable['requiredParameters'] = item.getAttribute(
                         'data-require',
                     );
                 }
@@ -28,12 +29,19 @@ class Submit extends Buttons {
                         'data-optional',
                     );
                 }
+
+                //newTable['path'] = this.tables[newTable.apiCall].path;
                 apiCalls.push(newTable);
+            }
+
+            if (tableau.connectionData) {
+                schema = JSON.parse(tableau.connectionData)?.schema;
             }
 
             const data = {
                 url: $('#url').val(),
                 tables: apiCalls,
+                schema: schema,
             };
 
             this.tableau.connectionData = JSON.stringify(data);

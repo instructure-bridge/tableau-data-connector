@@ -163,7 +163,7 @@ const table: TableName = {
                 {
                     alias: 'Default Days Until Due',
                     id: 'default_days_until_due',
-                    dataType: 'datetime',
+                    dataType: 'int',
                 },
                 {
                     alias: 'Course Registration URL',

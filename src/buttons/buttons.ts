@@ -1,9 +1,10 @@
-import Axios from 'axios';
-import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
-import axiosRetry from 'axios-retry';
-import { Bridge } from '../api/bridge';
 import { ErrorToast } from '../lib/errorToast';
-import { showElement, showLoading, switchPage } from '../lib/htmlUtils';
+import {
+    disableElement,
+    showElement,
+    showLoading,
+    switchPage,
+} from '../lib/htmlUtils';
 import { tables, TableName } from '../tables/api/author';
 
 // Class is inherited by most of the other buttons to add shared functions
@@ -58,7 +59,9 @@ class Buttons {
         $('#tableName').val($('#' + id + ' .title').text());
         $('#edit-section').attr('currentTable', id);
         const api = $(`#${id}`).attr('data-api');
-        const requiredParameter = $(`#${id}`).attr('data-require');
+        const requiredParameterString = decodeURIComponent(
+            $(`#${id}`).attr('data-require'),
+        );
         const optionalParameterString = decodeURIComponent(
             $(`#${id}`).attr('data-optional'),
         );
@@ -84,32 +87,36 @@ class Buttons {
             }
         }
 
-        if ('requiredParameter' in tables[api]) {
-            const url: any = tables[api]['requiredParameter']['path'];
-            const base: any = $('#url').val();
-
-            this.clearRequiredParameterOptions();
-            this.showElement('requiredParameter', true);
-            $('#requiredParameterTitle').text(
-                tables[api]['requiredParameter']['title'],
-            );
-            try {
-                this.getRequiredParameterData(
-                    new URL(url, base),
-                    api,
-                    $('#apiKey').val(),
-                    requiredParameter,
+        if ('requiredParameters' in tables[api]) {
+            this.showElement('requiredParameterSection', true);
+            this.addRequiredParameters(api);
+            if (requiredParameterString != '') {
+                const requiredParameterArray = requiredParameterString.split(
+                    '&',
                 );
-            } catch (error) {
-                console.log(error);
-                this.showErrorMessage(this.defaultErrorMessage);
-                this.showLoading(false);
+                for (const op of requiredParameterArray) {
+                    const requiredParameterSplit = op.split('=');
+                    // Hack.. fix later
+                    const key =
+                        requiredParameterSplit[0] == 'filters[]'
+                            ? 'filters'
+                            : requiredParameterSplit[0];
+                    const value = requiredParameterSplit[1];
+                    const id = `input-${key}`;
+                    if (value === 'all') {
+                        $(`#${id}`)
+                            .parent()
+                            .next('form')
+                            .find('[type=checkbox]')
+                            .trigger('click');
+                    } else {
+                        $(`#input-${key}`).val(value);
+                        disableElement(id, false);
+                    }
+                }
             }
-        } else {
-            this.showElement('requiredParameter', false);
-            // switch to edit section
-            this.switchPage('api-section', 'edit-section');
         }
+        this.switchPage('api-section', 'edit-section');
     }
 
     //function for delete button action
@@ -225,50 +232,38 @@ class Buttons {
         }
     }
 
-    getRequiredParameterData(apiCall, tableId, apiKey, oldParam) {
-        const urlObj = new Bridge(apiCall, apiKey).setUrl();
+    addRequiredParameters(api) {
+        const dataName = tables[api]['data'];
+        for (const parameter of tables[api]['requiredParameters']) {
+            let html = '';
+            let id;
+            if (parameter['type'] == 'string') {
+                const type = parameter['type'];
+                id = parameter['parameter'];
+                const name = parameter['name'];
+                const placeholder = parameter['placeholder'];
+                html = [
+                    `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
+                    `<div class="input-group-prepend">`,
+                    `<label class="input-group-text" for="input-${id}">${name}</label>`,
+                    `</div>`,
 
-        // Retries 3 times by default for network errors and 5xx error's
-        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
-        const req: AxiosRequestConfig = {
-            method: 'get',
-            url: urlObj.apiCall,
-            headers: urlObj.headers,
-        };
+                    `<input type="text" class="form-control" placeholder="${placeholder}" id="input-${id}" required>`,
+                    `</div>`,
+                    `<form class="form-check">`,
+                    `<input type="checkbox" class="form-check-input" id="requiredCheckbox">`,
+                    `<label class="form-check-label" for="requiredCheckbox">All ${dataName}</label>`,
+                    `</form>`,
+                ].join('\n');
+            }
 
-        Axios(req)
-            .then((response: AxiosResponse) => {
-                const result = response.data;
-                const tableInfo = tables[tableId];
-                const data = result[tableInfo['requiredParameter']['data']];
-                const nameCol = tableInfo['requiredParameter']['nameCol'];
-                const valCol = tableInfo['requiredParameter']['valCol'];
-                const selector = $('#requiredParameterSelector')[0];
-
-                for (let i = 0, len = data.length; i < len; i++) {
-                    this.addOption(data[i][nameCol], data[i][valCol], selector);
-                }
-
-                if ('next' in result.meta) {
-                    this.getRequiredParameterData(
-                        result.meta.next,
-                        tableId,
-                        apiKey,
-                        oldParam,
-                    );
-                } else {
-                    if (oldParam != undefined) {
-                        $('#requiredParameterSelector').val(oldParam);
-                    }
-                    this.switchPage('api-section', 'edit-section');
-                    this.showLoading(false);
-                }
-            })
-            .catch((error: AxiosError) => {
-                console.log(error);
-                this.showLoading(false);
-                this.showErrorMessage(this.defaultErrorMessage);
-            });
+            // Since this method can be called multiple times.. we don't want to re-append things
+            if ($('#requiredParameterList').html().includes(id)) {
+                continue;
+            } else {
+                $('#requiredParameterList').append(html);
+            }
+        }
     }
 }
 

@@ -119,7 +119,8 @@ const table: TableName = {
                 {
                     alias: 'Roles',
                     id: 'roles',
-                    dataType: 'string', //array
+                    dataType: 'string',
+                    originalType: 'array',
                 },
             ],
         },

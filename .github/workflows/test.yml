@@ -28,11 +28,13 @@ jobs:
     - name: Run jest tests
       run: yarn test
 
+      # Note: pull requests made via a forked repo do NOT have access to repository secrets
+      # See https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets#using-encrypted-secrets-in-a-workflow
     - name: Run integration tests
+      run: yarn integration
       env:
         API_KEY: ${{ secrets.TEST_API_KEY }}
         API_URL: ${{ secrets.TEST_API_URL }}
-      run: yarn integration
 
     - name: Run production build to ensure the build works
       run: yarn build

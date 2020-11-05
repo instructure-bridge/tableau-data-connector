@@ -1,6 +1,4 @@
-import 'chromedriver';
-import chrome from 'selenium-webdriver/chrome';
-import { Builder, By, Key, until } from 'selenium-webdriver';
+import { By } from 'selenium-webdriver';
 
 interface Screen {
     width: number;
@@ -14,4 +12,16 @@ export const screen: Screen = {
 
 export function delay(ms): Promise<number> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function setCredentials(driver, url, key) {
+    const localUrl = url || 'https://foo.example.com';
+    const localKey = key || 'Basic abc123';
+
+    const urlInput = await driver.findElement(By.id('url'));
+    await urlInput.clear();
+    await urlInput.sendKeys(localUrl);
+    const keyInput = await driver.findElement(By.id('apiKey'));
+    await keyInput.clear();
+    await keyInput.sendKeys(localKey);
 }

@@ -10,14 +10,14 @@
   <div class="row">
     <!-- credential section -->
     <div class="col-sm" id="url-section">
-      <form>
+      <form id="credentialForm">
         <div class="form-group">
           <label for="url">URL:</label>
-          <input class="form-control" type="text" id="url">
+          <input class="form-control" type="text" id="url" required>
         </div>
         <div class="form-group">
           <label for="apiKey">Key:</label>
-          <input class="form-control" type="text" id="apiKey">
+          <input class="form-control" type="text" id="apiKey" required>
         </div>
         <button type="button" class="btn btn-primary" id="credentialsButton">Set Credentials and
           URL</button>
@@ -51,19 +51,23 @@
           </div>
           <input type="text" class="form-control" id="tableName" aria-describedby="tableNameTitle">
         </div>
-        <div class="input-group mb-3" id="requiredParameter" style="display: none;">
-          <div class="input-group-prepend">
-            <label class="input-group-text" for="requiredParameterSelector" id="requiredParameterTitle">Title</label>
-          </div>
-          <select class="custom-select" id="requiredParameterSelector">
-          </select>
+        <div id="requiredParameterSection">
+          <form id="requiredForm">
+            <h2>Required Parameters
+              <button id="requiredParameterButton" class="btn btn-primary mx-5" type="button" data-toggle="collapse" data-target="#requiredParameterList" aria-expanded="true" aria-controls="requiredParameters">
+                Show/Hide Required Parameters
+              </button>
+            </h2>
+            <div class="collapse show" id="requiredParameterList">
+            </div>
+            <form id="requiredForm">
         </div>
         <div id="optionalParameterSection">
           <h2>Optional Parameters
-          <button id="optionalParameterButton" class="btn btn-primary mx-5" type="button" data-toggle="collapse" data-target="#optionalParameterList" aria-expanded="false" aria-controls="optionalParameters">
-            Show/Hide Optional Parameters
-          </button>
-        </h2>
+            <button id="optionalParameterButton" class="btn btn-primary mx-5" type="button" data-toggle="collapse" data-target="#optionalParameterList" aria-expanded="false" aria-controls="optionalParameters">
+              Show/Hide Optional Parameters
+            </button>
+          </h2>
           <div class="collapse" id="optionalParameterList">
           </div>
         </div>

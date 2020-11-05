@@ -12,7 +12,7 @@ class Add extends Buttons {
             $('#edit-section').attr('currentTable', $('#apiList li').length);
 
             this.parameters(this.api, this.tables);
-            this.requiredParameter(this.api, this.tables);
+            this.requiredParameters(this.api, this.tables);
         });
     }
 
@@ -21,41 +21,20 @@ class Add extends Buttons {
             // if the api call has optional parameters
             this.showElement('optionalParameterSection', true);
             this.addOptionalParameters(api);
+            this.switchPage('api-section', 'edit-section');
+        } else {
+            this.showElement('optionalParameterSection', false);
         }
     }
 
-    requiredParameter(api, tables) {
-        let url: any;
-        let base: any;
-        let title: any;
-
-        if ('requiredParameter' in tables[api]) {
-            url = tables[api]['requiredParameter']['path'];
-            base = $('#url').val();
-            title = tables[api]['requiredParameter']['title'];
-
-            //if the api call requires a parameter
-            this.showLoading(true);
-            this.clearRequiredParameterOptions();
-            this.showElement('requiredParameter', true);
-            $('#requiredParameterTitle').text(title);
-            try {
-                this.getRequiredParameterData(
-                    new URL(url, base),
-                    api,
-                    $('#apiKey').val(),
-                    undefined,
-                );
-            } catch (error) {
-                console.log(error);
-                this.showErrorMessage(this.defaultErrorMessage);
-                this.showLoading(false);
-            }
-        } else {
-            //if the api call does not require a parameter
-            this.showElement('requiredParameter', false);
-            // switch to edit section
+    requiredParameters(api, tables) {
+        if ('requiredParameters' in tables[api]) {
+            // if the api call has optional parameters
+            this.showElement('requiredParameterSection', true);
+            this.addRequiredParameters(api);
             this.switchPage('api-section', 'edit-section');
+        } else {
+            this.showElement('requiredParameterSection', false);
         }
     }
 }

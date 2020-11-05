@@ -53,6 +53,16 @@ function switchPage(start, end) {
     showElement(end, true);
 }
 
+function disableElement(id, isDisabled) {
+    if (isDisabled) {
+        $(`#${id}`).prop('disabled', true);
+        $(`#${id}`).prop('required', false);
+    } else {
+        $(`#${id}`).prop('disabled', false);
+        $(`#${id}`).prop('required', true);
+    }
+}
+
 //function for showing the loading icon for the required parameter fethcing
 function showLoading(isLoading) {
     if (isLoading) {
@@ -66,4 +76,11 @@ function showLoading(isLoading) {
     }
 }
 
-export { buildListHtml, showElement, showLoading, switchPage, updateApiList };
+export {
+    buildListHtml,
+    disableElement,
+    showElement,
+    showLoading,
+    switchPage,
+    updateApiList,
+};

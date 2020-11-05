@@ -1,24 +1,25 @@
 /* Allow the use of `any` type until tableauwdc adds types, or we add our own*/
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { updateApiList } from './lib/htmlUtils';
-import { isJsonString } from './lib/utils';
+import { updateApiList, showElement } from './lib/htmlUtils';
+import { isJsonString, logger } from './lib/utils';
 import { tables } from './tables/api/author';
 import { Bridge } from './api/bridge';
 
-declare const tableau: any; // Declared here, since tableauwdc-2.3.latest.min.js is made globally available via html src.
+// See global.d.ts for globals, such as tableau, which is made globally available via html src tag
 
+// Helper class that creates our custom tableau connector. However, as stated above, `tableau` is a global variable,
+// keep that in mind when making changes to this class. Example: when the class is first initialized it checks
+// to see if the tableau.connectionData object exists and uses/updates it if available.
 class Tableau {
     myConnector: any;
-    myTables: any;
 
     constructor() {
         this.myConnector = tableau.makeConnector();
-        this.myTables = {};
 
         // tableau init
         this.myConnector.init = (initCallback) => {
-            tableau.log('tableau web connector initialization');
+            logger('tableau web connector initialization');
             tableau.authType = tableau.authTypeEnum.custom;
             initCallback();
 
@@ -35,66 +36,54 @@ class Tableau {
             }
         };
 
-        // tableau get schema
         // explicitly using arrow function here, as it allows access to nested(this) objects
         this.myConnector.getSchema = (schemaCallback) => {
-            tableau.log('getSchema');
-            const data = JSON.parse(tableau.connectionData);
-            const chosenTables = [];
-            let idCounter = 1;
-
-            // takes each custom table and grabs the corredponding template table data
-            for (const table of data.tables) {
-                const apiCall = table['apiCall'];
-                const newTable = JSON.parse(JSON.stringify(tables[apiCall]));
-                const id = 'table' + idCounter;
-                newTable['table']['alias'] = table['title'];
-                newTable['table']['id'] = id;
-                idCounter = idCounter + 1;
-
-                if ('requiredParameter' in table) {
-                    const oldApiCall = newTable['path'];
-                    const newApiCall = oldApiCall.replace(
-                        '*',
-                        table['requiredParameter'],
-                    );
-                    newTable['path'] = newApiCall;
-                }
-                if ('optionalParameters' in table) {
-                    const oldApiCall = newTable['path'];
-                    const newApiCall =
-                        oldApiCall + '?' + table['optionalParameters'];
-                    newTable['path'] = newApiCall;
-                }
-                this.myTables[id] = newTable;
-                chosenTables.push(newTable.table);
-                console.log(chosenTables);
-            }
+            const chosenTables = this.getSchema();
             schemaCallback(chosenTables);
         };
 
         //tableau get data
         this.myConnector.getData = (table, doneCallback) => {
-            tableau.log('getData');
-
+            logger('getData');
+            let data;
             if (tableau.password.length == 0) {
                 this.populateStoredValues(tableau.connectionData);
                 tableau.abortForAuth();
             }
 
-            const data = JSON.parse(tableau.connectionData);
+            // Ensure the schema object has been set on the tableau.connectionData
+            // This seems to only be an issue when code is live reloading
+            if (JSON.parse(tableau.connectionData)?.schema) {
+                data = JSON.parse(tableau.connectionData);
+            } else {
+                this.getSchema();
+                data = JSON.parse(tableau.connectionData);
+            }
             const tableid = table.tableInfo.id;
-            const path = this.myTables[tableid].path;
-            const apiCall = new URL(path, data.url);
-            const bridgeApi = new Bridge(apiCall, tableau.password);
-
-            bridgeApi.performApiCall(
-                table,
-                doneCallback,
-                apiCall,
-                this.myTables,
-                tableau.password,
-            );
+            const tableInfo = data.schema[tableid];
+            if ('allPath' in tableInfo) {
+                const path = tableInfo.allPath;
+                const apiCall = new URL(path, data.url);
+                const bridgeApi = new Bridge(apiCall, tableau.password);
+                bridgeApi.getAllIds(
+                    table,
+                    doneCallback,
+                    apiCall,
+                    data.schema,
+                    tableau.password,
+                );
+            } else {
+                const path = tableInfo.path;
+                const apiCall = new URL(path, data.url);
+                const bridgeApi = new Bridge(apiCall, tableau.password);
+                bridgeApi.performApiCall(
+                    table,
+                    doneCallback,
+                    apiCall,
+                    data.schema,
+                    tableau.password,
+                );
+            }
         };
 
         //tableau connector registration
@@ -133,6 +122,52 @@ class Tableau {
         tableau.submit();
     }
 
+    getSchema() {
+        logger('getSchema');
+        const myTables = {};
+        const data = JSON.parse(tableau.connectionData);
+        const chosenTables = [];
+        let idCounter = 1;
+
+        // takes each custom table and grabs the corresponding template table data
+        for (const table of data.tables) {
+            const apiCall = table['apiCall'];
+            const newTable = JSON.parse(JSON.stringify(tables[apiCall]));
+            const id = 'table' + idCounter;
+            newTable['table']['alias'] = table['title'];
+            newTable['table']['id'] = id;
+            idCounter = idCounter + 1;
+
+            if ('requiredParameters' in table) {
+                const allPath =
+                    tables[table.apiCall]['requiredParameters'][0]['path'];
+                const oldApiCall = newTable['path'];
+                const oldApiParam = table['requiredParameters'].split('=')[1];
+                if (oldApiParam === 'all') {
+                    newTable['allPath'] = allPath;
+                } else {
+                    const newApiCall = oldApiCall.replace('*', oldApiParam);
+                    newTable['path'] = newApiCall;
+                }
+            }
+            if ('optionalParameters' in table) {
+                const oldApiCall = newTable['path'];
+                const newApiCall =
+                    oldApiCall + '?' + table['optionalParameters'];
+                newTable['path'] = newApiCall;
+            }
+            myTables[id] = newTable;
+            chosenTables.push(newTable.table);
+        }
+        // Store schema on connection object so we can reference it later
+        // during the getData phase. This is required if we are triggering a refresh of data vs setting
+        // up a new connection, see https://tableau.github.io/webdataconnector/docs/wdc_phases
+        // for more info
+        data['schema'] = myTables;
+        this.connectionData = JSON.stringify(data);
+        return chosenTables;
+    }
+
     // If the user has previously setup the web connector connectionData should contain those values
     // This function makes sure the UI gets re-populated with the data.
     populateStoredValues(connectionData) {
@@ -152,11 +187,30 @@ class Tableau {
                 const api = element.apiCall;
                 const title = element.title;
                 updateApiList(id, api, title, ulLength);
-                $(`#${id}`).attr('data-require', element.requiredParameter);
-                $(`#${id}`).attr('data-optional', element.optionalParameters);
+
+                if (element.requiredParameters) {
+                    $(`#${id}`).attr(
+                        'data-require',
+                        element.requiredParameters,
+                    );
+                } else {
+                    showElement('requiredParameterSection', false);
+                }
+
+                if (element.optionalParameters) {
+                    $(`#${id}`).attr(
+                        'data-optional',
+                        element.optionalParameters,
+                    );
+                } else {
+                    showElement('optionalParameterSection', false);
+                }
             });
         }
     }
 }
 
-export { Tableau };
+// Create and export a singleton object of the class
+const tableauInstance = new Tableau();
+
+export { Tableau, tableauInstance };

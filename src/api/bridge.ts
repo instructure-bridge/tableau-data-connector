@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
-import { convertObjectValues } from '../lib/utils';
+import { convertArray, logger, normalizeDate } from '../lib/utils';
 
 interface DefaultHeaders {
     Authorization: string;
@@ -25,10 +25,12 @@ export interface SetURL {
 class Bridge {
     apiCall: any;
     apiKey: any;
+    responsePromise: Array<any>;
 
     constructor(apiCall: any, apiKey: any) {
         this.apiCall = apiCall;
         this.apiKey = apiKey;
+        this.responsePromise = [];
     }
 
     setUrl(apiCall = this.apiCall, apiKey = this.apiKey): SetURL {
@@ -72,11 +74,6 @@ class Bridge {
         for (let i = 0, len = data.length; i < len; i++) {
             const row = {};
             for (const column of tableInfo.table.columns) {
-                if ('originalType' in column) {
-                    // Tableau does not allow array types, this function converts array type to strings
-                    convertObjectValues(data[i]);
-                }
-
                 if ('linkedSource' in column) {
                     //for data in linked sources
                     const tableauId = column.id;
@@ -91,7 +88,10 @@ class Bridge {
                     });
 
                     if (linkedData.length == 1) {
-                        row[tableauId] = linkedData[0][linkedId];
+                        row[tableauId] = this.normalizer(
+                            column,
+                            linkedData[0][linkedId],
+                        );
                     } else {
                         row[tableauId] = null;
                     }
@@ -103,18 +103,31 @@ class Bridge {
                     // Checks to ensure the parentId exists in the response
                     // Example: see courseTemplates table definition(response may or maynot actually have an author defined)
                     if (parentId in data[i]) {
-                        row[id] = data[i][parentId][subId];
+                        row[id] = this.normalizer(
+                            column,
+                            data[i][parentId][subId],
+                        );
                     } else {
                         row[id] = null;
                     }
                 } else {
                     const id = column.id;
-                    row[id] = data[i][id];
+                    row[id] = this.normalizer(column, data[i][id]);
                 }
             }
             tableData.push(row);
         }
         table.appendRows(tableData);
+    }
+
+    normalizer(column, data) {
+        if (column.dataType === 'datetime') {
+            return normalizeDate(data);
+        } else if (column.originalType === 'array') {
+            return convertArray(data);
+        } else {
+            return data;
+        }
     }
 
     performApiCall(table, doneCallback, apiCall, myTables, apiKey?: string) {
@@ -142,7 +155,97 @@ class Bridge {
                 }
             })
             .catch((error: AxiosError) => {
-                console.log(error);
+                logger(String(error));
+                doneCallback();
+                //TODO: try to find some sort of way to report an error since the browser is already closed
+            });
+    }
+
+    getAllIds(table, doneCallback, apiCall, myTables, apiKey?: string) {
+        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
+        const urlObj: SetURL = this.setUrl(apiCall, apiKey);
+        const req: AxiosRequestConfig = {
+            method: 'get',
+            url: urlObj.apiCall,
+            headers: urlObj.headers,
+        };
+        Axios(req)
+            .then((response: AxiosResponse) => {
+                let id;
+                let urlString;
+                let url;
+                let newPath;
+
+                const valCol =
+                    myTables[table.tableInfo.id]['requiredParameters'][0][
+                        'valCol'
+                    ];
+                const path = myTables[table.tableInfo.id]['path'];
+                const result = response.data;
+                const loopPromise = new Promise((resolve, reject) => {
+                    result[valCol].forEach((item, i, array) => {
+                        setTimeout(() => {
+                            id = item.id;
+                            urlString = JSON.parse(tableau.connectionData).url;
+                            newPath = path.replace('*', id);
+                            url = new URL(newPath, urlString);
+                            this.performAllApiCall(
+                                table,
+                                doneCallback,
+                                url,
+                                myTables,
+                            );
+                            if (i === array.length - 1) {
+                                resolve();
+                            }
+                        }, i * 2000);
+                    });
+                });
+                this.responsePromise.push(loopPromise);
+                if ('next' in result.meta) {
+                    this.getAllIds(
+                        table,
+                        doneCallback,
+                        result.meta.next,
+                        myTables,
+                    );
+                } else {
+                    Promise.all(this.responsePromise).then(() => {
+                        doneCallback();
+                    });
+                }
+            })
+            .catch((error: AxiosError) => {
+                logger(String(error));
+                doneCallback();
+                //TODO: try to find some sort of way to report an error since the browser is already closed
+            });
+    }
+
+    performAllApiCall(table, doneCallback, apiCall, myTables, apiKey?: string) {
+        // Retries 3 times by default for network errors and 5xx error's
+        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
+        const urlObj: SetURL = this.setUrl(apiCall, apiKey);
+        const req: AxiosRequestConfig = {
+            method: 'get',
+            url: urlObj.apiCall,
+            headers: urlObj.headers,
+        };
+        Axios(req)
+            .then((response: AxiosResponse) => {
+                const result = response.data;
+                this.addRow(table, myTables, result);
+                if ('next' in result.meta) {
+                    this.performAllApiCall(
+                        table,
+                        doneCallback,
+                        result.meta.next,
+                        myTables,
+                    );
+                }
+            })
+            .catch((error: AxiosError) => {
+                logger(String(error));
                 doneCallback();
                 //TODO: try to find some sort of way to report an error since the browser is already closed
             });

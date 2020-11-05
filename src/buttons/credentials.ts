@@ -5,13 +5,16 @@ class Credentials extends Buttons {
     constructor() {
         super();
         $('#credentialsButton').on('click', () => {
-            this.switchPage('url-section', 'api-section');
+            const form = <any>$('#credentialForm');
+            if (form[0].checkValidity()) {
+                this.switchPage('url-section', 'api-section');
 
-            if (process.env.NODE_ENV !== 'test') {
                 new CheckCredentials(
                     $('#url').val(),
                     $('#apiKey').val(),
                 ).performApiCall();
+            } else {
+                form[0].reportValidity();
             }
         });
     }

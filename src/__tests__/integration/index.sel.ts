@@ -1,8 +1,8 @@
 import 'chromedriver';
 import chrome from 'selenium-webdriver/chrome';
-import { Builder, By, Key, until } from 'selenium-webdriver';
+import { Builder, By } from 'selenium-webdriver';
 
-import { delay, screen } from './helpers';
+import { screen, setCredentials } from './helpers';
 
 describe('basic functionality', function () {
     let driver: chrome.Driver;
@@ -38,6 +38,10 @@ describe('basic functionality', function () {
         expect(urlStyle).toEqual('');
         expect(apiStyle).toEqual('display: none;');
         expect(editStyle).toEqual('display: none;');
+
+        // Added logic that required url and apiKey via html5 required
+        // Add some additional tests that test the messages
+        await setCredentials(driver, API_URL, API_KEY);
 
         await driver.findElement(By.id('credentialsButton')).click();
 

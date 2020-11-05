@@ -20,13 +20,13 @@ const table: TableName = {
         },
         path: '/api/author/programs/*/learners',
         data: 'learners',
-        requiredParameter: {
-            title: 'Program',
-            path: '/api/author/programs',
-            data: 'programs',
-            nameCol: 'title',
-            valCol: 'id',
-        },
+        //requiredParameter: {
+        //title: 'Program',
+        //path: '/api/author/programs',
+        //data: 'programs',
+        //nameCol: 'title',
+        //valCol: 'id',
+        //},
     },
 };
 

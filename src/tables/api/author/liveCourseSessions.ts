@@ -35,13 +35,13 @@ const table: TableName = {
         },
         path: '/api/author/live_courses/*/sessions',
         data: 'sessions',
-        requiredParameter: {
-            title: 'Live Course',
-            path: '/api/author/live_courses',
-            data: 'live_courses',
-            nameCol: 'title',
-            valCol: 'id',
-        },
+        //requiredParameter: {
+        //title: 'Live Course',
+        //path: '/api/author/live_courses',
+        //data: 'live_courses',
+        //nameCol: 'title',
+        //valCol: 'id',
+        //},
     },
 };
 
