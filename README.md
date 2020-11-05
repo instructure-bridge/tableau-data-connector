@@ -2,7 +2,8 @@
 Tableau data connector for bridge
 
 ## Getting started
-TODO
+The Tableau web connector is deployed to github pages at https://tableau-connector.bridgeapp.com/
+
 
 ## Development
 * Install `node12` and `yarn`
@@ -12,6 +13,8 @@ TODO
 
 This will start the bridge WebDataConnector (what configures tableau). To test out with the
 Tableau simulator, see the below section.
+
+Information and WDC docs are available at https://tableau.github.io/webdataconnector/
 
 ### Using the Tableau Simulator
 * Start the webpack-dev-server with `yarn start`
