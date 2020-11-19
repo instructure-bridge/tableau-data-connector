@@ -12,6 +12,7 @@ function updateApiList(id, api, title, ulLength): void {
         // remove empty list message when adding first entry
         if (ulLength <= 0) {
             showElement('emptyApiListMessage', false);
+            $('#submitButton').prop('disabled', false);
         }
 
         const html: string = buildListHtml(id, api, title);

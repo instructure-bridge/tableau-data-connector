@@ -76,11 +76,8 @@ class Buttons {
                 );
                 for (const op of optionalParameterArray) {
                     const optionalParameterSplit = op.split('=');
-                    // Hack.. fix later
-                    const key =
-                        optionalParameterSplit[0] == 'filters[]'
-                            ? 'filters'
-                            : optionalParameterSplit[0];
+                    // Hack.. fix later(filter[], includes[])
+                    const key = optionalParameterSplit[0].replace('[]', '');
                     const value = optionalParameterSplit[1];
                     $(`#input-${key}`).val(value);
                 }
@@ -96,11 +93,8 @@ class Buttons {
                 );
                 for (const op of requiredParameterArray) {
                     const requiredParameterSplit = op.split('=');
-                    // Hack.. fix later
-                    const key =
-                        requiredParameterSplit[0] == 'filters[]'
-                            ? 'filters'
-                            : requiredParameterSplit[0];
+                    // Hack.. fix later(filter[], includes[])
+                    const key = requiredParameterSplit[0].replace('[]', '');
                     const value = requiredParameterSplit[1];
                     const id = `input-${key}`;
                     if (value === 'all') {
@@ -141,6 +135,7 @@ class Buttons {
         }
         if ($('#apiList li').length <= 0) {
             this.showElement('emptyApiListMessage', true);
+            $('#submitButton').prop('disabled', true);
         }
     }
 
@@ -152,11 +147,14 @@ class Buttons {
         for (const parameter of tables[api]['parameters']) {
             let html = '';
             let id;
-            if (['options', 'filters'].includes(parameter['type'])) {
+            if (
+                ['options', 'filters', 'includes'].includes(parameter['type'])
+            ) {
                 const type = parameter['type'];
                 id = parameter['parameter'];
                 const name = parameter['name'];
                 const defaultOption = parameter['default'];
+                // If Chosen default is actually one of the options, select it, otherwise nosel
                 const options = [
                     `<div class="input-group my-3" parameterType="${type}" id="${id}">`,
                     `<div class="input-group-prepend">`,
@@ -164,14 +162,29 @@ class Buttons {
                     `</div>`,
 
                     `<select class="custom-select" id="input-${id}">`,
-                    `<option value="nosel" selected>${defaultOption}</option>`,
                 ];
 
                 for (const option of parameter['options']) {
+                    if (option['name'] === defaultOption) {
+                        options.push(
+                            `<option value="${option['value']}" selected>${option['name']}</option>`,
+                        );
+                    } else {
+                        options.push(
+                            `<option value="${option['value']}">${option['name']}</option>`,
+                        );
+                    }
+                }
+
+                // If default option isn't in options add it with nosel
+                if (
+                    !options.find((element) => element.includes(defaultOption))
+                ) {
                     options.push(
-                        `<option value="${option['value']}">${option['name']}</option>`,
+                        `<option value="nosel" selected>${defaultOption}</option>`,
                     );
                 }
+
                 options.push(...[`</select>`, `</div>`]);
                 html = options.join('\n');
             } else if (parameter['type'] == 'boolean') {

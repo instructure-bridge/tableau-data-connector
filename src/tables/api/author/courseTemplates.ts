@@ -249,6 +249,30 @@ const table: TableName = {
                 ],
             },
             {
+                name: 'Includes',
+                parameter: 'includes',
+                type: 'includes',
+                default: 'Enrollment Profiles',
+                options: [
+                    {
+                        name: 'Counts',
+                        value: 'counts',
+                    },
+                    {
+                        name: 'Expiration',
+                        value: 'expiration',
+                    },
+                    {
+                        name: 'Enrollment Profiles',
+                        value: 'enrollment_profiles',
+                    },
+                    {
+                        name: 'Programs',
+                        value: 'programs',
+                    },
+                ],
+            },
+            {
                 name: 'Only Deleted',
                 parameter: 'only_deleted',
                 type: 'boolean',

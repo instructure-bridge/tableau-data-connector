@@ -1,0 +1,18 @@
+# Basic set up for three package managers
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    # Disbable auto pull requests for now
+    open-pull-requests-limit: 0
+    ignore:
+      # The below 4 deps are part of the "webdataconnector": "tableau/webdataconnector" dev dependency.
+      # These can be safley ignored for now since the tableau/webdataconnector is only used to run the
+      # tableau simulator during development, and is not part of the production build
+      - dependency-name: "http-proxy"
+      - dependency-name: "hapi"
+      - dependency-name: "ammo"
+      - dependency-name: "subtext"

@@ -105,7 +105,11 @@ class EditDone extends Buttons {
                     if (option != 'nosel') {
                         value = option;
                     }
-                } else if (parameterInput.attr('parametertype') === 'filters') {
+                } else if (
+                    ['filters', 'includes'].includes(
+                        parameterInput.attr('parametertype'),
+                    )
+                ) {
                     const option = $(`#input-${name} option:selected`).val();
                     if (option != 'nosel') {
                         name = `${name}[]`;
@@ -161,7 +165,11 @@ class EditDone extends Buttons {
                     if (option != 'nosel') {
                         value = option;
                     }
-                } else if (parameterInput.attr('parametertype') === 'filters') {
+                } else if (
+                    ['filters', 'includes'].includes(
+                        parameterInput.attr('parametertype'),
+                    )
+                ) {
                     const option = $(`#input-${name} option:selected`).val();
                     if (option != 'nosel') {
                         name = `${name}[]`;
