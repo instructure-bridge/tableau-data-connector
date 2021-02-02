@@ -182,7 +182,7 @@ class Bridge {
                     ];
                 const path = myTables[table.tableInfo.id]['path'];
                 const result = response.data;
-                const loopPromise = new Promise((resolve, reject) => {
+                const loopPromise = new Promise<void>((resolve) => {
                     result[valCol].forEach((item, i, array) => {
                         setTimeout(() => {
                             id = item.id;
