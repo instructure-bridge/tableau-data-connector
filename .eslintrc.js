@@ -1,4 +1,8 @@
 module.exports = {
+  plugins: [
+    '@typescript-eslint/eslint-plugin',
+    'eslint-plugin-tsdoc'
+  ],
     env: {
         browser: true,
         commonjs: true,
@@ -10,7 +14,9 @@ module.exports = {
         ecmaVersion: 11,
     },
     ignorePatterns: ['**/src/__tests__/test-dist/**', '**/dist/**'],
-    rules: {},
+    rules: {
+      'tsdoc/syntax': 'warn'
+    },
   overrides: [
     {
       files: ['**/*.ts', '**/*.tsx'],

@@ -156,7 +156,7 @@ class Tableau {
                     oldApiCall + '?' + table['optionalParameters'];
                 newTable['path'] = newApiCall;
             }
-            myTables[id] = newTable;
+            myTables[id] = this.filterColumns(newTable);
             chosenTables.push(newTable.table);
         }
         // Store schema on connection object so we can reference it later
@@ -166,6 +166,34 @@ class Tableau {
         data['schema'] = myTables;
         this.connectionData = JSON.stringify(data);
         return chosenTables;
+    }
+
+    /**
+     * Only include a column if we are requesting extra data from the tables api via
+     * optionalParameters
+     * @example
+     * ```
+     * During the interaction phase, a customer selects the 'List Users' table. They then
+     * edit the 'Optional Parameters' and include the 'Custom Fields' option. The path now
+     * looks like `/api/author/users?includes[]=custom_fields`
+     *
+     * During the getSchema phase, we would then grab the listUsers object from ./tables/api/author/users.
+     * The listUsers defines all possible columns that we choose to support. If optionalParameter is defined
+     * for the column(in this example the 'Custom Fields' column), we make sure the api path includes the value of
+     * the column optionalParameter. This, in effect, means we only include the 'Custom Fields' column if the customer
+     * asked for it.
+     * ```
+     * @param table - The table which is being added to the tableau schema.
+     */
+    filterColumns(table) {
+        const path = table.path;
+        const columns = table.table.columns.filter((column) => {
+            return 'optionalParameter' in column
+                ? path.includes(column.optionalParameter)
+                : column;
+        });
+        table.table.columns = columns;
+        return table;
     }
 
     // If the user has previously setup the web connector connectionData should contain those values
@@ -186,6 +214,7 @@ class Tableau {
                 const ulLength = $('#apiList li').length;
                 const api = element.apiCall;
                 const title = element.title;
+
                 updateApiList(id, api, title, ulLength);
 
                 if (element.requiredParameters) {

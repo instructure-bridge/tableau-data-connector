@@ -147,7 +147,6 @@ class EditDone extends Buttons {
             }
             parameterString = parameterListToJoin.join('&');
             $(`#${id}`).attr('data-require', parameterString);
-            console.log(parameterString);
         }
     }
 
@@ -205,7 +204,6 @@ class EditDone extends Buttons {
             }
             parameterString = parameterListToJoin.join('&');
             $(`#${id}`).attr('data-optional', parameterString);
-            console.log(parameterString);
         }
     }
 }

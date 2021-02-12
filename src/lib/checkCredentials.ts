@@ -3,6 +3,7 @@ import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
 import { ErrorToast } from './errorToast';
 import { Bridge, SetURL } from '../api/bridge';
+import { logger } from '../lib/utils';
 
 class CheckCredentials extends Bridge {
     apiCall: any;
@@ -49,7 +50,7 @@ class CheckCredentials extends Bridge {
                     this.error(
                         'An error has occured, with your credentials see the browser console for more details',
                     );
-                    console.log(error);
+                    logger(error);
                 }
             });
     }

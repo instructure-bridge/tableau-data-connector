@@ -48,7 +48,7 @@ function isObject(val: any) {
 
 // Log to both console, and tableau.log for troubleshooting
 // the simulator, as well as the desktop client.
-function logger(msg: string) {
+function logger(msg: any) {
     tableau.log(msg);
     console.log(msg);
 }

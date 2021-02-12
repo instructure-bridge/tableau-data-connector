@@ -1,4 +1,5 @@
 import { TableName } from './interface';
+import { customFieldsColumn } from './users/columns/';
 
 const table: TableName = {
     authorUser: {
@@ -122,11 +123,24 @@ const table: TableName = {
                     dataType: 'string',
                     originalType: 'array',
                 },
+                ...customFieldsColumn,
             ],
         },
         path: '/api/author/users',
         data: 'users',
         parameters: [
+            {
+                name: 'Includes',
+                parameter: 'includes',
+                type: 'includes',
+                default: 'Default',
+                options: [
+                    {
+                        name: 'Custom Fields',
+                        value: 'custom_fields',
+                    },
+                ],
+            },
             {
                 name: 'Sort',
                 parameter: 'sort',

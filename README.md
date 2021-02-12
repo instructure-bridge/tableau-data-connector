@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/instructure-bridge/tableau-data-connector/workflows/Tests/badge.svg)](https://github.com/instructure-bridge/tableau-data-connector/actions)
+[![Connector](https://img.shields.io/website?label=connector&up_message=online&url=https%3A%2F%2Ftableau-connector.bridgeapp.com)](https://tableau-connector.bridgeapp.com)
+
 # tableau-data-connector
 Tableau data connector for bridge
 
