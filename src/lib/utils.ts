@@ -37,6 +37,20 @@ function convertArray(value: any) {
     }
 }
 
+/**
+ * Returns an array with arrays of the given size.
+ *
+ * @param myArray {Array} Array to split
+ * @param chunkSize {Integer} Size of every group
+ */
+function chunkArray(myArray: Array<any>, chunk_size: number) {
+    const results = [];
+    while (myArray.length) {
+        results.push(myArray.splice(0, chunk_size));
+    }
+    return results;
+}
+
 // Checks if val is an object or not
 function isObject(val: any) {
     // val == null actually checks for both null and undefined
@@ -49,7 +63,20 @@ function isObject(val: any) {
 // Log to both console, and tableau.log for troubleshooting
 // the simulator, as well as the desktop client.
 function logger(msg: any) {
-    tableau.log(msg);
     console.log(msg);
+    try {
+        // During testing tableau may not have been fully initialized
+        tableau.log(String(msg));
+    } catch {
+        // ignore
+    }
 }
-export { convertArray, isJsonString, isObject, logger, normalizeDate };
+
+export {
+    chunkArray,
+    convertArray,
+    isJsonString,
+    isObject,
+    logger,
+    normalizeDate,
+};

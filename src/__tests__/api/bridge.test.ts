@@ -1,7 +1,14 @@
 import nock from 'nock';
+import { AddRow } from '../../api/addRow';
 import { Bridge } from '../../api/bridge';
 
+jest.mock('../../api/addRow');
+
 describe('Bridge', function () {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     afterEach(() => {
         nock.restore();
     });
@@ -19,27 +26,31 @@ describe('Bridge', function () {
     const doneCallback = jest.fn();
 
     it('Retries on error', async () => {
-        jest.autoMockOff();
         const optionsRequest = nock(testUrl)
+            .replyContentLength()
             .defaultReplyHeaders(replyHeaders)
             .intercept(testParams, 'OPTIONS')
             .twice()
             .reply(201, 'Ok');
         const error = nock(testUrl)
+            .replyContentLength()
             .defaultReplyHeaders(replyHeaders)
             .intercept(testParams, 'GET')
             .once()
             .reply(500, 'Server Error');
         const success = nock(testUrl)
+            .replyContentLength()
             .defaultReplyHeaders(replyHeaders)
             .intercept(testParams, 'GET')
             .once()
             .reply(200, 'Ok');
 
-        await new Bridge(testUrl, apiKey).performApiCall(
+        const bridge = new Bridge(testUrl + testParams, apiKey);
+
+        await bridge.performApiCall(
             table,
             doneCallback,
-            testUrl,
+            testUrl + testParams,
             myTables,
             apiKey,
         );
@@ -49,6 +60,7 @@ describe('Bridge', function () {
         expect(optionsRequest.isDone()).toBeTruthy;
         expect(error.isDone()).toBeTruthy;
         expect(success.isDone()).toBeTruthy;
+        expect(AddRow).toHaveBeenCalled();
     });
     // TODO: Add more tests
 });

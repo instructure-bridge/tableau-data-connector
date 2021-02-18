@@ -1,8 +1,6 @@
-import Axios from 'axios';
-import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
-import axiosRetry from 'axios-retry';
+import { AxiosError } from 'axios';
 import { ErrorToast } from './errorToast';
-import { Bridge, SetURL } from '../api/bridge';
+import { Bridge } from '../api/bridge';
 import { logger } from '../lib/utils';
 
 class CheckCredentials extends Bridge {
@@ -13,10 +11,7 @@ class CheckCredentials extends Bridge {
         super(apiCall, apiKey);
     }
 
-    performApiCall() {
-        // Retries 3 times by default for network errors and 5xx error's
-        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
-
+    async performApiCall() {
         if (!this.apiCall || !this.apiKey) {
             this.error('Please enter a value for URL and Key');
             return;
@@ -24,17 +19,11 @@ class CheckCredentials extends Bridge {
 
         this.validateUrl(this.apiCall);
 
-        const urlObj: SetURL = this.setUrl(this.apiCall, this.apiKey);
-        const req: AxiosRequestConfig = {
-            method: 'get',
-            url: urlObj.apiCall + 'api/author/users?id=1',
-            headers: urlObj.headers,
-        };
-
-        Axios(req)
-            .then((response: AxiosResponse) => {
+        const apiCall = new URL('api/author/users?id=1', this.apiCall);
+        await this.get(apiCall, this.apiKey)
+            .then((result) => {
                 const data: string =
-                    response?.data?.toString()?.toLowerCase() || '';
+                    result?.data?.toString()?.toLowerCase() || '';
                 if (data.includes('account not found')) {
                     throw new Error('account not found');
                 }

@@ -18,7 +18,7 @@ class AddRow {
         this.result = result;
     }
 
-    processData(): void {
+    async processData(): Promise<any> {
         const tableInfo = this.myTables[this.table.tableInfo.id];
         const data = this.result[tableInfo.data];
 
@@ -55,7 +55,7 @@ class AddRow {
             });
             this.tableData.push(row);
         });
-        this.table.appendRows(this.tableData);
+        return this.table.appendRows(this.tableData);
     }
 }
 

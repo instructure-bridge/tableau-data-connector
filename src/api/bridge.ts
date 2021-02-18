@@ -1,7 +1,7 @@
 import Axios from 'axios';
-import { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
+import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
-import { logger } from '../lib/utils';
+import { chunkArray, logger } from '../lib/utils';
 import { AddRow } from './addRow';
 
 interface DefaultHeaders {
@@ -27,12 +27,12 @@ export interface SetURL {
 class Bridge {
     apiCall: any;
     apiKey: any;
-    responsePromise: Array<any>;
+    private defaultDoneCallback: boolean = true;
+    private batches: Array<any> = [];
 
     constructor(apiCall: any, apiKey: any) {
         this.apiCall = apiCall;
         this.apiKey = apiKey;
-        this.responsePromise = [];
     }
 
     setUrl(apiCall = this.apiCall, apiKey = this.apiKey): SetURL {
@@ -69,37 +69,6 @@ class Bridge {
         };
     }
 
-    addRow(table, myTables, result) {
-        new AddRow(table, myTables, result).processData();
-    }
-
-    performApiCall(table, doneCallback, apiCall, myTables, apiKey?: string) {
-        // Retries 3 times by default for network errors and 5xx error's
-        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
-        const urlObj: SetURL = this.setUrl(apiCall, apiKey);
-        const req: AxiosRequestConfig = {
-            method: 'get',
-            url: urlObj.apiCall,
-            headers: urlObj.headers,
-        };
-        Axios(req)
-            .then((response: AxiosResponse) => {
-                const result = response.data;
-                this.addRow(table, myTables, result);
-                if ('next' in result.meta) {
-                    const nextUrl = this.metaNext(response, result.meta.next);
-                    this.performApiCall(table, doneCallback, nextUrl, myTables);
-                } else {
-                    doneCallback();
-                }
-            })
-            .catch((error: AxiosError) => {
-                logger(String(error));
-                doneCallback();
-                //TODO: try to find some sort of way to report an error since the browser is already closed
-            });
-    }
-
     /**
      * Returns the meta.next url used when a response is paged
      *
@@ -121,75 +90,24 @@ class Bridge {
         return url;
     }
 
-    getAllIds(table, doneCallback, apiCall, myTables, apiKey?: string) {
-        axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
-        const urlObj: SetURL = this.setUrl(apiCall, apiKey);
-        const req: AxiosRequestConfig = {
-            method: 'get',
-            url: urlObj.apiCall,
-            headers: urlObj.headers,
-        };
-        Axios(req)
-            .then((response: AxiosResponse) => {
-                let id;
-                let urlString;
-                let url;
-                let newPath;
-
-                const valCol =
-                    myTables[table.tableInfo.id]['requiredParameters'][0][
-                        'valCol'
-                    ];
-                const path = myTables[table.tableInfo.id]['path'];
-                const result = response.data;
-                // Account for empty array in results.
-                if (!Array.isArray(result[valCol]) || !result[valCol].length) {
-                    logger('No results');
-                    doneCallback();
-                } else {
-                    const loopPromise = new Promise<void>((resolve) => {
-                        result[valCol].forEach((item, i, array) => {
-                            setTimeout(() => {
-                                id = item.id;
-                                urlString = JSON.parse(tableau.connectionData)
-                                    .url;
-                                newPath = path.replace('*', id);
-                                url = new URL(newPath, urlString);
-                                this.performAllApiCall(
-                                    table,
-                                    doneCallback,
-                                    url,
-                                    myTables,
-                                );
-                                if (i === array.length - 1) {
-                                    resolve();
-                                }
-                            }, i * 2000);
-                        });
-                    });
-                    this.responsePromise.push(loopPromise);
-                    if ('next' in result.meta) {
-                        this.getAllIds(
-                            table,
-                            doneCallback,
-                            result.meta.next,
-                            myTables,
-                        );
-                    } else {
-                        Promise.all(this.responsePromise).then(() => {
-                            doneCallback();
-                        });
-                    }
-                }
-            })
-            .catch((error: AxiosError) => {
-                logger(String(error));
-                doneCallback();
-                //TODO: try to find some sort of way to report an error since the browser is already closed
-            });
+    /**
+     * Adds data to tableau
+     *
+     * @param table - The current table being processed
+     * @param myTables - All currently selected tables
+     * @param result - Axios returned data
+     */
+    async addRow(table: any, myTables: any, result: any) {
+        await new AddRow(table, myTables, result).processData();
     }
 
-    performAllApiCall(table, doneCallback, apiCall, myTables, apiKey?: string) {
+    /**
+     * Axios.get function
+     *
+     * @param apiCall - The url
+     * @param apiKey - The password/key
+     */
+    async get(apiCall: string | URL, apiKey?: string): Promise<AxiosResponse> {
         // Retries 3 times by default for network errors and 5xx error's
         axiosRetry(Axios, { retryDelay: axiosRetry.exponentialDelay });
         const urlObj: SetURL = this.setUrl(apiCall, apiKey);
@@ -198,25 +116,152 @@ class Bridge {
             url: urlObj.apiCall,
             headers: urlObj.headers,
         };
-        Axios(req)
-            .then((response: AxiosResponse) => {
-                const result = response.data;
-                this.addRow(table, myTables, result);
-                if ('next' in result.meta) {
-                    const nextUrl = this.metaNext(response, result.meta.next);
-                    this.performAllApiCall(
+        return Axios(req);
+    }
+
+    /**
+     * Generator function, that calls this.get and creates an iterable.
+     * If paginated, will use meta.next url
+     *
+     * @param apiCall - The url
+     * @param apiKey - The password/key
+     */
+    async *performRequests(apiCall: string | URL, apiKey?: string) {
+        let url = apiCall;
+        while (url) {
+            const response = await this.get(url, apiKey);
+            const result = await response.data;
+
+            url = result?.meta?.next
+                ? this.metaNext(response, result.meta.next)
+                : null;
+            yield result;
+        }
+    }
+
+    /**
+     * Performs the bridge api calls
+     *
+     * @remarks
+     * This method is called during the tableau.getData phase
+     *
+     * @param table - The table currently being processed
+     * @param doneCallback - the tableau.getData(doneCallback), letting tableau know when the getData phase is complete.
+     * @param apiCall - the url
+     * @param myTables - All currently selected tables
+     * @param apiKey - The password/key
+     */
+    async performApiCall(
+        table,
+        doneCallback,
+        apiCall,
+        myTables,
+        apiKey?: string,
+    ) {
+        const generatedRequests = this.performRequests(apiCall, apiKey);
+
+        try {
+            for await (const result of generatedRequests) {
+                await this.addRow(table, myTables, result);
+            }
+            // this is a little bit of a hack.., this allows for another function
+            // (such as getAllIds) to call the tableau.getData().doneCallback()
+            // Otherwise, the doneCallback maybe called before appending data in tableau has completed
+            // TODO: implement this somewhere else
+            if (this.defaultDoneCallback) {
+                logger('getData default doneCallback()');
+                doneCallback();
+            } else {
+                return;
+            }
+        } catch (error) {
+            logger(error);
+        }
+    }
+
+    /**
+     * Gets all course ID's
+     *
+     * @remarks
+     * This method is called during the tableau.getData phase, and is currently only called when the user
+     * has selected the "List Enrollments" table.
+     *
+     * @internal
+     * TODO abstract this out so it could be used by multiple tables
+     *
+     *
+     * @param table - The table currently being processed
+     * @param doneCallback - the tableau.getData(doneCallback), letting tableau know when the getData phase is complete.
+     * @param apiCall - the url
+     * @param myTables - All currently selected tables
+     * @param apiKey - The password/key
+     */
+    async getAllIds(table, doneCallback, apiCall, myTables, apiKey?: string) {
+        // Lets this function handle tableau.getData().doneCallback()
+        this.defaultDoneCallback = false;
+
+        const valCol =
+            myTables[table.tableInfo.id]['requiredParameters'][0]['valCol'];
+
+        const generatedRequests = this.performRequests(apiCall, apiKey);
+
+        for await (const result of generatedRequests) {
+            const idArray = result[valCol];
+            if (!Array.isArray(idArray) || !idArray.length) {
+                logger('No data to gather');
+                doneCallback();
+            } else {
+                const batchArray = chunkArray(idArray, 5);
+                batchArray.forEach((batch) => {
+                    this.processBatch(
                         table,
                         doneCallback,
-                        nextUrl,
+                        apiCall,
                         myTables,
+                        batch,
                     );
-                }
-            })
-            .catch((error: AxiosError) => {
-                logger(String(error));
-                doneCallback();
-                //TODO: try to find some sort of way to report an error since the browser is already closed
-            });
+                });
+            }
+        }
+
+        // This makes sure ALL batches are done, before we tell tableau we are finished
+        Promise.all(this.batches).then(() => {
+            logger('getData completed, calling doneCallback()');
+            doneCallback();
+        });
+    }
+
+    /**
+     * Processes a batch of requests
+     *
+     * @internal
+     * TODO Move this to another class, so it can be re-usable
+     *
+     *
+     * @param table - The table currently being processed
+     * @param doneCallback - the tableau.getData(doneCallback), letting tableau know when the getData phase is complete.
+     * @param apiCall - the url
+     * @param myTables - All currently selected tables
+     * @param batch - The batch of id's to process (in this case they will be course id's)
+     */
+    async processBatch(
+        table,
+        doneCallback,
+        apiCall,
+        myTables,
+        batch: Array<any>,
+    ) {
+        const path = myTables[table.tableInfo.id]['path'];
+        batch.forEach((item) => {
+            const id = item.id;
+            const newPath = path.replace('*', id);
+            const url = new URL(newPath, apiCall.origin);
+            this.batches.push(
+                Promise.resolve(
+                    this.performApiCall(table, doneCallback, url, myTables),
+                ),
+            );
+        });
     }
 }
 

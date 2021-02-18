@@ -46,9 +46,7 @@ module.exports = function (configDirs) {
             new MiniCssExtractPlugin({ filename: 'styles.css' }),
             new CleanWebpackPlugin(),
         ],
-      externals: [
-        /^(jquery.*|\$)$/i,
-      ]
+        externals: [/^(jquery.*|\$)$/i],
     };
     return module;
 };

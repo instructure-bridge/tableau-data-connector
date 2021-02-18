@@ -1,5 +1,9 @@
 // @ts-nocheck
 import './main.css';
+// https://babeljs.io/docs/en/babel-polyfill
+// pollyfill required for async iterator support
+import 'core-js/features/symbol';
+import 'regenerator-runtime/runtime';
 import {
     Add,
     AddTableOptions,

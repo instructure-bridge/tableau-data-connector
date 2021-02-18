@@ -9,10 +9,12 @@ class Credentials extends Buttons {
             if (form[0].checkValidity()) {
                 this.switchPage('url-section', 'api-section');
 
-                new CheckCredentials(
-                    $('#url').val(),
-                    $('#apiKey').val(),
-                ).performApiCall();
+                Promise.resolve(
+                    new CheckCredentials(
+                        $('#url').val(),
+                        $('#apiKey').val(),
+                    ).performApiCall(),
+                );
             } else {
                 form[0].reportValidity();
             }

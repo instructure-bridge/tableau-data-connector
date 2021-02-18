@@ -7,6 +7,10 @@ module.exports = {
                 targets: {
                     node: 'current',
                 },
+                useBuiltIns: 'entry',
+                corejs: {
+                    version: '3.8.3',
+                },
             },
         ],
         '@babel/preset-typescript',

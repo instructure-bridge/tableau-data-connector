@@ -8,6 +8,7 @@
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "moduleResolution": "node",
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "lib": ["DOM", "ES5", "ScriptHost", "DOM.Iterable", "ESNext"],
     }
 }
